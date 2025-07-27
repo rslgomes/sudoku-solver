@@ -85,6 +85,28 @@ export default function GridInput() {
     refs.current[0]?.focus()
   }
 
+  const handlePaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    event.preventDefault()
+
+    handleInputClear()
+
+    const pasted = event.clipboardData.getData('text')
+    const ALLOWED_CHARS_REGEX = /[1-9\-0\s]/g
+    const matches = pasted.match(ALLOWED_CHARS_REGEX)
+    if (!matches) return
+
+    for (let i = 0; i < Math.min(matches.length, 81); i++) {
+      const char = matches[i]
+      const input = refs.current[i]
+      if (!input) continue
+
+      input.value = char === '0' || char === '-' || char === ' ' ? '' : char
+    }
+    const nextIndex = Math.min(matches.length)
+    if (nextIndex < 0 || nextIndex > 80) submitButtonRef.current?.focus()
+    else refs.current[nextIndex]?.focus()
+  }
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const values = refs.current.map((input) => input?.value.trim() || '')
@@ -100,85 +122,85 @@ export default function GridInput() {
   }
 
   return (
-    <div className="px-8">
-      <form onSubmit={handleSubmit}>
-        <label className="text-fg1 font-bold text-lg" id="grid-input-label">
-          Grid Input
-        </label>
-        <div
-          className="mt-1 w-full max-w-56 aspect-square border border-secondary-border p-[1px] bg-secondary-border grid grid-rows-9 grid-cols-1 gap-[1px]"
-          role="grid"
-          aria-label="Sudoku input grid"
-          aria-labelledby="grid-input-label"
-          aria-colcount={9}
-          aria-rowcount={9}
+    <form onSubmit={handleSubmit}>
+      <label className="text-fg1 font-bold text-lg" id="grid-input-label">
+        Grid Input
+      </label>
+      <div
+        className=" mt-1 w-full max-w-96 spect-square border border-secondary-border p-[1px] bg-secondary-border grid grid-rows-9 grid-cols-1 gap-[1px]"
+        role="grid"
+        aria-label="Sudoku input grid"
+        aria-labelledby="grid-input-label"
+        aria-colcount={9}
+        aria-rowcount={9}
+      >
+        {Array.from({ length: 9 }).map((_, rowIndex) => {
+          return (
+            <div
+              className="grid grid-cols-9 grid-rows-1 gap-[1px]"
+              role="row"
+              key={rowIndex}
+            >
+              {Array.from({ length: 9 }).map((_, colIndex) => {
+                const i = rowIndex * 9 + colIndex
+                const borderClasses = getBorders(rowIndex, colIndex)
+
+                return (
+                  <input
+                    key={i}
+                    role="gridcell"
+                    aria-readonly="false"
+                    aria-colindex={colIndex + 1}
+                    aria-rowindex={rowIndex + 1}
+                    aria-label={getCellLabel(colIndex, rowIndex)}
+                    ref={(element) => {
+                      refs.current[i] = element
+                      if (!element) return
+
+                      if (i === 0) element.tabIndex = 0
+                      else element.tabIndex = -1
+                    }}
+                    defaultValue={''}
+                    maxLength={1}
+                    onBeforeInput={(e) => {
+                      const ALLOWED_CHARS_REGEX = /^[1-9\s0-]$/
+                      if (!ALLOWED_CHARS_REGEX.test(e.data || ''))
+                        e.preventDefault()
+                    }}
+                    onKeyDown={(e) => handleInputKeyDown(e, i)}
+                    onChange={() => {
+                      const next = i + 1
+                      if (next < 81) refs.current[next]?.focus()
+                    }}
+                    onFocus={(e) => {
+                      e.target.select()
+                      activeIndexRef.current = i
+                    }}
+                    onPaste={handlePaste}
+                    className={`w-full aspect-square text-center bg-bg1 ${borderClasses} border-secondary-border text-fg1 text-xs font-mono focus:ring-2 focus:ring-secondary`}
+                  />
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+      <div className="w-full max-w-96 flex justify-between gap-2 mt-4">
+        <button
+          ref={submitButtonRef}
+          type="submit"
+          className="px-4 py-1 bg-primary text-bg1 text-sm rounded hover:bg-primary-fg1 transition"
         >
-          {Array.from({ length: 9 }).map((_, rowIndex) => {
-            return (
-              <div
-                className="grid grid-cols-9 grid-rows-1 gap-[1px]"
-                role="row"
-                key={rowIndex}
-              >
-                {Array.from({ length: 9 }).map((_, colIndex) => {
-                  const i = rowIndex * 9 + colIndex
-                  const borderClasses = getBorders(rowIndex, colIndex)
-
-                  return (
-                    <input
-                      key={i}
-                      role="gridcell"
-                      aria-readonly="false"
-                      aria-colindex={colIndex + 1}
-                      aria-rowindex={rowIndex + 1}
-                      aria-label={getCellLabel(colIndex, rowIndex)}
-                      ref={(el) => {
-                        refs.current[i] = el
-
-                        if (el && i === 0) el.tabIndex = 0
-                        else if (el) el.tabIndex = -1
-                      }}
-                      defaultValue={''}
-                      maxLength={1}
-                      onBeforeInput={(e) => {
-                        const ALLOWED_CHARS_REGEX = /^[1-9\s0-]$/
-                        if (!ALLOWED_CHARS_REGEX.test(e.data || ''))
-                          e.preventDefault()
-                      }}
-                      onKeyDown={(e) => handleInputKeyDown(e, i)}
-                      onChange={() => {
-                        const next = i + 1
-                        if (next < 81) refs.current[next]?.focus()
-                      }}
-                      onFocus={(e) => {
-                        e.target.select()
-                        activeIndexRef.current = i
-                      }}
-                      className={`w-full aspect-square text-center bg-bg1 ${borderClasses} border-secondary-border text-fg1 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-secondary`}
-                    />
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
-        <div className="w-full max-w-56 flex justify-between gap-2 mt-4">
-          <button
-            ref={submitButtonRef}
-            type="submit"
-            className="px-4 py-1 bg-primary text-bg1 text-sm rounded hover:bg-primary-fg1 transition"
-          >
-            Submit
-          </button>
-          <button
-            type="button"
-            onClick={handleInputClear}
-            className="px-4 py-1 bg-secondary-fg1 text-bg1 text-sm rounded hover:bg-secondary-fg2 transition"
-          >
-            Clear
-          </button>
-        </div>
-      </form>
-    </div>
+          Submit
+        </button>
+        <button
+          type="button"
+          onClick={handleInputClear}
+          className="px-4 py-1 bg-secondary-fg1 text-bg1 text-sm rounded hover:bg-secondary-fg2 transition"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
   )
 }

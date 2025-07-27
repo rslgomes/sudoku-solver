@@ -30,7 +30,7 @@ export default function Grid() {
       aria-label="Sudoku puzzle grid"
       aria-rowcount={9}
       aria-colcount={9}
-      className="grid grid-rows-9 grid-cols-9 gap-0 min-w-[27rem] w-full max-w-[36rem] aspect-square"
+      className="grid grid-rows-9 grid-cols-9 gap-0 min-w-[27rem] w-full max-w-[36rem] aspect-square mt-10"
     >
       {Array.from({ length: 9 }).map((_, rowIndex) => (
         <div key={rowIndex} role="row" className="contents">
