@@ -1,21 +1,21 @@
 import React, { useRef } from 'react'
 import { useGrid } from '../../contexts/GridContext'
 import type { CellData } from '../../libs/types'
-import {
-  getBorders,
-  getCellLabel,
-  getNeighbors,
-} from '../../libs/gridInputHelpers'
+import { getBorders, getCellLabel } from '../../libs/gridInputHelpers'
 
 export default function GridInput() {
   const gridMeta = useGrid()
   const { setGridData } = gridMeta
 
   const refs = useRef<Array<HTMLInputElement | null>>([])
+  const activeIndexRef = useRef(0)
   const submitButtonRef = useRef<HTMLButtonElement | null>(null)
 
   const handleInputKeyDown = (event: React.KeyboardEvent, index: number) => {
-    const neighbors = getNeighbors(index)
+    const row = Math.floor(index / 9)
+    const col = index % 9
+
+    const PAGE_SIZE = 3
 
     const focusAndSelect = (input: HTMLInputElement | null) => {
       if (!input) return
@@ -23,28 +23,53 @@ export default function GridInput() {
       setTimeout(() => input.select(), 0)
     }
 
+    const moveFocus = (newIndex: number) => {
+      if (newIndex < 0 || newIndex > 80) return
+      const prevElement = refs.current[activeIndexRef.current]
+      const nextElement = refs.current[newIndex]
+
+      if (prevElement) prevElement.tabIndex = -1
+      if (nextElement) nextElement.tabIndex = 0
+
+      focusAndSelect(refs.current[newIndex])
+    }
+
     switch (event.key) {
       case 'Enter':
         submitButtonRef.current?.click()
         break
       case 'ArrowRight':
-        focusAndSelect(refs.current[neighbors.right])
+        if (col < 8) moveFocus(index + 1)
         break
       case 'ArrowLeft':
-        focusAndSelect(refs.current[neighbors.left])
+        if (col > 0) moveFocus(index - 1)
         break
       case 'ArrowUp':
-        focusAndSelect(refs.current[neighbors.up])
+        if (row > 0) moveFocus(index - 9)
         break
       case 'ArrowDown':
-        focusAndSelect(refs.current[neighbors.down])
+        if (row < 8) moveFocus(index + 9)
+        break
+      case 'Home':
+        if (event.ctrlKey) moveFocus(0)
+        else moveFocus(row * 9)
+        break
+      case 'End':
+        if (event.ctrlKey) moveFocus(80)
+        else moveFocus(row * 9 + 8)
+        break
+      case 'PageUp':
+        if (row - PAGE_SIZE >= 0) moveFocus(index - 9 * PAGE_SIZE)
+        break
+      case 'PageDown':
+        if (row + PAGE_SIZE <= 8) moveFocus(index + 9 * PAGE_SIZE)
         break
       case 'Backspace':
-        setTimeout(() => focusAndSelect(refs.current[index - 1]))
+        setTimeout(() => moveFocus(index - 1))
         break
       case 'Delete':
         if (event.shiftKey) handleInputClear()
-        else setTimeout(() => focusAndSelect(refs.current[index]))
+        else setTimeout(() => moveFocus(index))
         break
       case 'Tab':
         event.preventDefault()
@@ -106,9 +131,12 @@ export default function GridInput() {
                       aria-readonly="false"
                       aria-colindex={colIndex + 1}
                       aria-rowindex={rowIndex + 1}
-                      aria-label={`Cell ${getCellLabel(colIndex, rowIndex)}`}
+                      aria-label={getCellLabel(colIndex, rowIndex)}
                       ref={(el) => {
                         refs.current[i] = el
+
+                        if (el && i === 0) el.tabIndex = 0
+                        else if (el) el.tabIndex = -1
                       }}
                       defaultValue={''}
                       maxLength={1}
@@ -124,6 +152,7 @@ export default function GridInput() {
                       }}
                       onFocus={(e) => {
                         e.target.select()
+                        activeIndexRef.current = i
                       }}
                       className={`w-full aspect-square text-center bg-bg1 ${borderClasses} border-secondary-border text-fg1 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-secondary`}
                     />
