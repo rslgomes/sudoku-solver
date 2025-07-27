@@ -1,0 +1,183 @@
+@import 'tailwindcss';
+
+:root {
+    --color-shade-01: oklch(23.9% 0.0076 351.4);
+    --color-shade-02: oklch(26.9% 0.0073 351.4);
+    --color-shade-03: oklch(30.3% 0.0099 351.4);
+    --color-shade-04: oklch(32.7% 0.0136 351.4);
+    --color-shade-05: oklch(35.1% 0.016 351.4);
+    --color-shade-06: oklch(38.2% 0.018 351.4);
+    --color-shade-07: oklch(42.8% 0.0218 351.4);
+    --color-shade-08: oklch(51.3% 0.0285 351.4);
+    --color-shade-09: oklch(55.6% 0.0303 351.4);
+    --color-shade-10: oklch(59.6% 0.0298 351.4);
+    --color-shade-11: oklch(93.6% 0.0053 351.4);
+    --color-shade-12: oklch(94.8% 0.0029 351.4);
+
+    --color-red-01: oklch(0.44 0.18 029);
+    --color-red-02: oklch(0.55 0.2 029);
+    --color-red-03: oklch(0.66 0.22 029);
+
+    --color-orange-01: oklch(0.51 0.16 046);
+    --color-orange-02: oklch(0.62 0.17 046);
+    --color-orange-03: oklch(0.73 0.18 046);
+
+    --color-yellow-01: oklch(0.62 0.13 078);
+    --color-yellow-02: oklch(0.73 0.14 078);
+    --color-yellow-03: oklch(0.83 0.16 078);
+
+    --color-green-01: oklch(0.55 0.11 109);
+    --color-green-02: oklch(0.66 0.14 109);
+    --color-green-03: oklch(0.77 0.16 109);
+
+    --color-aqua-dark-1: oklch(31.1% 0.0284 145);
+    --color-aqua-dark-2: oklch(35.1% 0.0408 145);
+    --color-aqua-dark-3: oklch(43.5% 0.0509 145);
+    --color-aqua-main: oklch(65% 0.0897 145);
+    --color-aqua-light-3: oklch(79.8% 0.0446 145);
+    --color-aqua-light-2: oklch(87.9% 0.0254 145);
+    --color-aqua-light-1: oklch(90.9% 0.0161 145);
+
+    --color-blue-01: oklch(0.47 0.08 199);
+    --color-blue-02: oklch(0.58 0.07 199);
+    --color-blue-03: oklch(0.69 0.04 199);
+
+    --color-purple-dark-1: oklch(29.7% 0.046 352);
+    --color-purple-dark-2: oklch(32.9% 0.0733 352);
+    --color-purple-dark-3: oklch(40.8% 0.0813 352);
+    --color-purple-main: oklch(61% 0.11 352);
+    --color-purple-light-3: oklch(81.1% 0.0389 352);
+    --color-purple-light-2: oklch(87.5% 0.0247 352);
+    --color-purple-light-1: oklch(90.5% 0.0168 352);
+
+    /* Gray */
+    --bg1: var(--color-shade-12);
+    --bg2: var(--color-shade-11);
+    --border: var(--color-shade-05);
+    --fg1: var(--color-shade-01);
+    --fg2: var(--color-shade-02);
+
+    /* Primary */
+    --primary-bg1: var(--color-aqua-light-1);
+    --primary-bg2: var(--color-aqua-light-2);
+    --primary-border: var(--color-aqua-light-3);
+    --primary-main: var(--color-aqua-main);
+    --primary-fg1: var(--color-aqua-dark-1);
+    --primary-fg2: var(--color-aqua-dark-2);
+
+    /* Secondary */
+    --secondary-bg1: var(--color-purple-light-1);
+    --secondary-bg2: var(--color-purple-light-2);
+    --secondary-border: var(--color-purple-light-3);
+    --secondary-main: var(--color-purple-main);
+    --secondary-fg1: var(--color-purple-dark-1);
+    --secondary-fg2: var(--color-purple-dark-2);
+
+    --error: var(--color-red-01);
+    --success: var(--color-green-01);
+}
+
+[data-theme='dark'] {
+    /* Gray */
+    --bg1: var(--color-shade-01);
+    --bg2: var(--color-shade-03);
+    --border: var(--color-shade-08);
+    --fg1: var(--color-shade-12);
+    --fg2: var(--color-shade-11);
+
+    /* Primary */
+    --primary-bg1: var(--color-aqua-dark-1);
+    --primary-bg2: var(--color-aqua-dark-2);
+    --primary-border: var(--color-aqua-dark-3);
+    --primary-fg1: var(--color-aqua-light-1);
+    --primary-fg2: var(--color-aqua-light-2);
+
+    /* Secondary */
+    --secondary-bg1: var(--color-purple-dark-1);
+    --secondary-bg2: var(--color-purple-dark-2);
+    --secondary-border: var(--color-purple-dark-3);
+    --secondary-fg1: var(--color-purple-light-1);
+    --secondary-fg2: var(--color-purple-light-2);
+
+    --error: var(--color-red-03);
+    --success: var(--color-green-03);
+}
+
+@theme {
+    --color-*: initial;
+    --color-shade-01: oklch(23.9% 0.0076 351.4);
+    --color-shade-02: oklch(26.9% 0.0073 351.4);
+    --color-shade-03: oklch(30.3% 0.0099 351.4);
+    --color-shade-04: oklch(32.7% 0.0136 351.4);
+    --color-shade-05: oklch(35.1% 0.016 351.4);
+    --color-shade-06: oklch(38.2% 0.018 351.4);
+    --color-shade-07: oklch(42.8% 0.0218 351.4);
+    --color-shade-08: oklch(51.3% 0.0285 351.4);
+    --color-shade-09: oklch(55.6% 0.0303 351.4);
+    --color-shade-10: oklch(59.6% 0.0298 351.4);
+    --color-shade-11: oklch(77.4% 0.0251 351.4);
+    --color-shade-12: oklch(94.9% 0.0047 351.4);
+
+    --color-red-01: oklch(0.44 0.18 029);
+    --color-red-02: oklch(0.55 0.2 029);
+    --color-red-03: oklch(0.66 0.22 029);
+
+    --color-orange-01: oklch(0.51 0.16 046);
+    --color-orange-02: oklch(0.62 0.17 046);
+    --color-orange-03: oklch(0.73 0.18 046);
+
+    --color-yellow-01: oklch(0.62 0.13 078);
+    --color-yellow-02: oklch(0.73 0.14 078);
+    --color-yellow-03: oklch(0.83 0.16 078);
+
+    --color-green-01: oklch(0.55 0.11 109);
+    --color-green-02: oklch(0.66 0.14 109);
+    --color-green-03: oklch(0.77 0.16 109);
+
+    --color-aqua-dark-1: oklch(25.8% 0.0118 145);
+    --color-aqua-dark-2: oklch(31.1% 0.0284 145);
+    --color-aqua-dark-3: oklch(39.1% 0.0464 145);
+    --color-aqua-main: oklch(65% 0.0897 145);
+    --color-aqua-light-3: oklch(84.4% 0.0344 145);
+    --color-aqua-light-2: oklch(90.9% 0.0161 145);
+    --color-aqua-light-1: oklch(93.5% 0.0064 145);
+
+    --color-blue-01: oklch(0.47 0.08 199);
+    --color-blue-02: oklch(0.58 0.07 199);
+    --color-blue-03: oklch(0.69 0.04 199);
+
+    --color-purple-dark-1: oklch(23.9% 0.0127 352.1);
+    --color-purple-dark-2: oklch(25% 0.0223 352.1);
+    --color-purple-dark-3: oklch(36.2% 0.0788 352.1);
+    --color-purple-main: oklch(61% 0.11 352);
+    --color-purple-light-3: oklch(84.4% 0.032 352.1);
+    --color-purple-light-2: oklch(90.5% 0.0168 352.1);
+    --color-purple-light-1: oklch(93.6% 0.0063 352.1);
+
+    /* ====== DESIGN TOKENS ====== */
+
+    /* Gray */
+    --color-bg1: var(--bg1);
+    --color-bg2: var(--bg2);
+    --color-border: var(--border);
+    --color-fg1: var(--fg1);
+    --color-fg2: var(--fg2);
+
+    /* Primary */
+    --color-primary-bg1: var(--primary-bg1);
+    --color-primary-bg2: var(--primary-bg2);
+    --color-primary-border: var(--primary-border);
+    --color-primary: var(--primary-main);
+    --color-primary-fg1: var(--primary-fg1);
+    --color-primary-fg2: var(--primary-fg2);
+
+    /* Secondary */
+    --color-secondary-bg1: var(--secondary-bg1);
+    --color-secondary-bg2: var(--secondary-bg2);
+    --color-secondary-border: var(--secondary-border);
+    --color-secondary-fg1: var(--secondary-fg1);
+    --color-secondary-fg2: var(--secondary-fg2);
+
+    --color-error: var(--error);
+    --color-success: var(--success);
+}

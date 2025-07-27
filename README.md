@@ -1,54 +1,99 @@
-# React + TypeScript + Vite
+# Sudoku Solver
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive and accessible Sudoku puzzle tool built with **React**, **TypeScript**, **Tailwind CSS v4**, and **Vite** — designed for solving, training, and experimenting with Sudoku logic.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Core Components
 
-## Expanding the ESLint configuration
+- **9×9 Sudoku Grid**
+  - Renders a responsive square grid with correct 3x3 subgrid borders.
+  - Supports both **pen marks** (final numbers) and **pencil marks** (candidate notes).
+  - Grid is styled using Tailwind CSS with custom themes (including OKLCH color tokens).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **`Square` Component**
+  - Displays a large number (pen mark) or a small grid of pencil marks.
+  - ARIA attributes for accessibility: `role="gridcell"` and `aria-label` per cell.
+  - Customizable borders depending on position (for visual clarity of subgrids).
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- **`Grid` Component**
+  - Renders the main puzzle using context-fed state.
+  - No prop-drilling: uses `GridContext` to access cell data directly.
+  - Responsive and semantic grid layout using `role="grid"` and `role="row"`.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Grid Input Mode
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **9×9 Inline Input Grid**
+  - Accepts only numbers `1–9`, or whitespace (`0`, `space`, `-`) for empty cells.
+  - Tab, arrow key, and Enter support for keyboard navigation.
+  - Backspace deletes current input and moves backward.
+  - `Ctrl + V` / paste support to allow quick puzzle input (coming soon).
+  - ARIA-enhanced with `aria-rowindex`, `aria-colindex`, and `aria-label` (`A1`, `B5`, etc).
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+- **Form Controls**
+  - **Submit** button to parse and store grid input as context.
+  - **Clear** button to reset all inputs to empty.
+
+### Theming
+
+- **Dark / Light / System Theme Toggle**
+  - Toggle cycles through light, dark, and system modes.
+  - Uses `ThemeContext` with `ThemeProvider` to avoid FOIT (flash of incorrect theme).
+  - Toggle is accessible with `aria-label` and visual icons via `@heroicons/react`.
+
+### Accessibility
+
+- Uses [WAI-ARIA Grid Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/grid/)
+  - `role="grid"`, `role="row"`, `role="gridcell"`
+  - Proper `aria-rowindex`, `aria-colindex`, and descriptive labels for screen readers.
+- Input automatically selects content on focus for easier overwrite.
+- Navigation keys follow common screen reader and user expectations.
+
+### Architecture & State
+
+- **`GridContext`** for centralized board state
+  - Accessible via `useGrid` hook.
+  - Stores `gridData: CellData[]`, where each `CellData` holds optional `penMark` and `pencilMarks`.
+
+- **Flexible Layout**
+  - `MainLayout` handles grid layout with support for future side panels (e.g., trainer vs solver).
+  - Grid is rendered inside `MainPage`, wrapped by `GridProvider` to scope context per route.
+
+---
+
+## Tech Stack
+
+- React 18 + TypeScript
+- Vite (with `@tailwindcss/vite` plugin)
+- Tailwind CSS v4 (with theme tokens defined using `@theme`)
+- Heroicons for icons
+- Context API for shared state
+
+---
+
+## Structure Overview
+
+```txt
+.
+├── assets/                      # Static assets like SVGs and JSON examples
+│
+├── components/                  # Reusable UI and functional components
+│   ├── General/
+│   ├── Grid/                    # Main Grid renderer
+│   ├── GridInput/               # 9×9 interactive input grid
+│   └── ui/
+│
+├── contexts/                   # React Context API providers
+│   ├── GridContext.tsx          # Sudoku board state management
+│   └── ThemeContext.tsx         # Light/dark/system theme provider
+│
+├── layouts/
+│   └── MainLayout.tsx           # Top-level layout wrapper with slots
+│
+├── libs/                       # Utilities, helpers, and types
+├── main.tsx                    # App entrypoint
+├── pages/
+│   └── index.tsx                # MainPage with Grid + Input
+│
+└── styles/
 ```
