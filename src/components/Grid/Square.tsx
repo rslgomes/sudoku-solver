@@ -1,9 +1,14 @@
 import type { HTMLAttributes } from 'react'
+import { cn } from '../../libs/cn'
 
 interface BaseSquareProps {
   mode: 'pen' | 'pencil'
   penMark?: number
   pencilMarks?: number[]
+  customBgColor?: string
+  locked: boolean
+  isSelected: boolean
+  onClick: () => void
   borders?: Partial<{
     top: string
     right: string
@@ -20,6 +25,9 @@ export default function Square({
   pencilMarks = [],
   borders = {},
   className,
+  locked,
+  customBgColor,
+  isSelected,
   ...rest
 }: SquareProps) {
   const borderClasses = [
@@ -42,7 +50,16 @@ export default function Square({
             ? `Pencil marks ${pencilMarks.join(', ')}`
             : 'Empty square'
       }
-      className={`aspect-square w-full border border-primary-border text-fg1 flex items-center justify-center text-lg font-semibold ${borderClasses} ${className}`}
+      className={cn(
+        'aspect-square w-full border border-primary-border text-fg1 flex items-center justify-center text-lg font-semibold',
+        borderClasses,
+        {
+          'text-primary-border': locked,
+          'border-2 border-secondary': isSelected,
+          [customBgColor ?? '']: customBgColor !== undefined,
+        },
+        className
+      )}
       {...rest}
     >
       {mode === 'pen' && <span className="text-2xl">{penMark}</span>}

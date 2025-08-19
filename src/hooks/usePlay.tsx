@@ -5,8 +5,9 @@ import type { CellData } from '../libs/types'
 type TypeValueMap = {
   pen: number
   pencil: number
-  color: string
   clear: undefined
+  lock: boolean | undefined
+  color: string
 }
 
 export type Move = {
@@ -21,10 +22,11 @@ type MoveSet = {
   pen?: number
   pencil?: number[]
   color?: string
-  clear: boolean
+  clear?: boolean
+  lock?: boolean
 }
 
-const EMPTY_SQUARE: CellData = {
+const NO_NUMBER_SQUARE: Pick<CellData, 'penMark' | 'pencilMarks'> = {
   penMark: undefined,
   pencilMarks: [],
 }
@@ -32,37 +34,56 @@ const EMPTY_SQUARE: CellData = {
 export default function usePlay() {
   const { gridData, setGridData } = useGrid()
 
-  const clearSquare = () => EMPTY_SQUARE
-
-  const updatePenMark = (square: CellData, value?: number): CellData => {
-    if (!value) return EMPTY_SQUARE
-    const willRemove = square.penMark === value
-    return { ...square, penMark: willRemove ? undefined : value }
+  const clearGrid = () => {
+    const newGridData = gridData.map(() => ({
+      ...NO_NUMBER_SQUARE,
+      locked: false,
+      customBgColor: undefined,
+    }))
+    setGridData(newGridData)
   }
 
-  const updatePencilMark = (square: CellData, value?: number): CellData => {
-    if (!value) return EMPTY_SQUARE
-    const { pencilMarks } = square
-    const willRemove = pencilMarks.includes(value)
-    return {
+  const squareHandlers = useMemo(() => {
+    const clearSquare = (square: CellData) => ({
       ...square,
-      pencilMarks: willRemove
-        ? pencilMarks.filter((mark) => mark !== value)
-        : [...pencilMarks, value],
+      ...NO_NUMBER_SQUARE,
+    })
+
+    const updatePenMark = (square: CellData, value?: number): CellData => {
+      if (value === undefined) return { ...square, penMark: undefined }
+      const willRemove = square.penMark === value
+      return { ...square, penMark: willRemove ? undefined : value }
     }
-  }
 
-  const updateColor = (square: CellData, value?: string): CellData => {
-    if (!value) return EMPTY_SQUARE
-    const willRemove = square.color === value
-    return { ...square, color: willRemove ? undefined : value }
-  }
+    const updatePencilMark = (square: CellData, value?: number): CellData => {
+      if (value === undefined) return { ...square, pencilMarks: [] }
+      const { pencilMarks } = square
+      const willRemove = pencilMarks.includes(value)
+      return {
+        ...square,
+        pencilMarks: willRemove
+          ? pencilMarks.filter((mark) => mark !== value)
+          : [...pencilMarks, value],
+      }
+    }
 
-  const handlers = useMemo(() => {
+    const updateBgColor = (square: CellData, value?: string): CellData => {
+      if (value === undefined) return { ...square, customBgColor: undefined }
+      const willRemove = square.customBgColor === value || value === 'none'
+      return { ...square, customBgColor: willRemove ? undefined : value }
+    }
+
+    const handleLock = (square: CellData, value?: boolean): CellData => {
+      if (value === undefined) return { ...square, locked: !square.locked }
+      return { ...square, locked: value }
+    }
+
     const map = {
       pen: updatePenMark,
       pencil: updatePencilMark,
-      color: updateColor,
+      color: updateBgColor,
+      lock: handleLock,
+      clear: clearSquare,
     }
 
     return map
@@ -72,12 +93,13 @@ export default function usePlay() {
     (move: Move) => {
       const { index: moveIndex, mode, value } = move
       const square = gridData[moveIndex]
-      if (!square) return
+
+      if (square.locked && !(mode === 'lock' || mode === 'color')) return
 
       const newSquare =
         mode === 'clear'
-          ? clearSquare()
-          : handlers[mode](square, value as never)
+          ? squareHandlers.clear(square)
+          : squareHandlers[mode](square, value as never)
 
       const newGridData = gridData.map((cell, cellIndex) =>
         moveIndex === cellIndex ? newSquare : cell
@@ -85,7 +107,7 @@ export default function usePlay() {
 
       setGridData(newGridData)
     },
-    [handlers, gridData, setGridData]
+    [squareHandlers, gridData, setGridData]
   )
 
   const makeMoves = useCallback(
@@ -93,9 +115,9 @@ export default function usePlay() {
       const moveSetPerCell = new Map<number, MoveSet>()
 
       for (const { mode, value, index } of moves) {
-        const matchMoveSet = moveSetPerCell.get(index) || { clear: false }
-        if (matchMoveSet.clear) continue
+        const matchMoveSet = moveSetPerCell.get(index) ?? {}
 
+        if (matchMoveSet.clear) continue
         if (mode === 'clear') {
           moveSetPerCell.set(index, { clear: true })
           continue
@@ -106,12 +128,18 @@ export default function usePlay() {
             matchMoveSet.pen = value as number
             break
           case 'pencil': {
-            const currentPencilMarks = matchMoveSet.pencil ?? []
-            matchMoveSet.pencil = [...new Set([...currentPencilMarks, value])]
+            const current = matchMoveSet.pencil ?? []
+            const v = value as number
+            matchMoveSet.pencil = current.includes(v)
+              ? current
+              : [...current, v]
             break
           }
           case 'color':
             matchMoveSet.color = value as string
+            break
+          case 'lock':
+            matchMoveSet.lock = value as boolean
             break
         }
 
@@ -121,31 +149,42 @@ export default function usePlay() {
       const newGridData = gridData.map((originalSquare, idx) => {
         const moveSet = moveSetPerCell.get(idx)
         if (!moveSet) return originalSquare
-        if (moveSet.clear) return clearSquare()
+        if (moveSet.clear) return squareHandlers.clear(originalSquare)
 
-        const { pen, pencil, color } = moveSet
+        const treatAsUnlocked =
+          moveSet.lock !== undefined || !originalSquare.locked
 
-        const moveList: Move[] = [
-          pen && { mode: 'pen', value: pen, index: idx },
-          color && { mode: 'color', value: color, index: idx },
-          ...(pencil?.map(
-            (mark): Move => ({ mode: 'pencil', value: mark, index: idx })
-          ) ?? []),
-        ].filter(Boolean) as Move[]
+        const { pen, pencil, color, lock } = moveSet
 
-        return moveList.reduce((accSquare, move) => {
-          if (move.mode === 'clear') return clearSquare()
-          return handlers[move.mode](accSquare, move.value as never)
+        const moveList: Move[] = []
+        if (treatAsUnlocked && pen !== undefined) {
+          moveList.push({ mode: 'pen', value: pen, index: idx })
+        }
+        if (treatAsUnlocked && pencil && pencil.length) {
+          for (const mark of pencil) {
+            moveList.push({ mode: 'pencil', value: mark, index: idx })
+          }
+        }
+        if (color !== undefined) {
+          moveList.push({ mode: 'color', value: color, index: idx })
+        }
+        if (lock !== undefined)
+          moveList.push({ mode: 'lock', value: lock, index: idx })
+
+        return moveList.reduce((accSquare, mv) => {
+          if (mv.mode === 'clear') return squareHandlers.clear(accSquare)
+          return squareHandlers[mv.mode](accSquare, mv.value as never)
         }, originalSquare)
       })
 
       setGridData(newGridData)
     },
-    [handlers, gridData, setGridData]
+    [squareHandlers, gridData, setGridData]
   )
 
   return {
     makeMove,
     makeMoves,
+    clearGrid,
   }
 }

@@ -1,33 +1,46 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
-    createContext,
-    useContext,
-    useState,
-    type Dispatch,
-    type SetStateAction,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type Dispatch,
+  type SetStateAction,
 } from 'react'
 import type { CellData } from '../libs/types'
 
 interface GridContext {
-    gridData: CellData[]
-    setGridData: Dispatch<SetStateAction<CellData[]>>
+  gridData: CellData[]
+  setGridData: Dispatch<SetStateAction<CellData[]>>
+}
+
+const EMPTY_SQUARE: CellData = {
+  penMark: undefined,
+  pencilMarks: [],
+  locked: false,
+  customBgColor: undefined,
 }
 
 const GridContext = createContext<GridContext | undefined>(undefined)
 
 export const GridProvider = ({ children }: { children: React.ReactNode }) => {
-    const [gridData, setGridData] = useState<CellData[]>([])
-    return (
-        <GridContext.Provider value={{ gridData, setGridData }}>
-            {children}
-        </GridContext.Provider>
-    )
+  const [gridData, setGridData] = useState<CellData[]>([])
+
+  useEffect(() => {
+    setGridData(Array.from({ length: 81 }, () => EMPTY_SQUARE))
+  }, [])
+
+  return (
+    <GridContext.Provider value={{ gridData, setGridData }}>
+      {children}
+    </GridContext.Provider>
+  )
 }
 
 export const useGrid = () => {
-    const gridValue = useContext(GridContext)
-    if (!gridValue) {
-        throw new Error('useGrid must be used within a GridProvider')
-    }
-    return gridValue
+  const gridValue = useContext(GridContext)
+  if (!gridValue) {
+    throw new Error('useGrid must be used within a GridProvider')
+  }
+  return gridValue
 }

@@ -60,7 +60,7 @@
   /* Primary */
   --primary-bg1: var(--color-aqua-light-1);
   --primary-bg2: var(--color-aqua-light-2);
-  --primary-border: var(--color-aqua-light-3);
+  --primary-border: var(--color-aqua-dark-3);
   --primary-main: var(--color-aqua-main);
   --primary-fg1: var(--color-aqua-dark-1);
   --primary-fg2: var(--color-aqua-dark-2);
@@ -192,6 +192,7 @@
   --color-secondary-bg1: var(--secondary-bg1);
   --color-secondary-bg2: var(--secondary-bg2);
   --color-secondary-border: var(--secondary-border);
+  --color-secondary: var(--secondary-main);
   --color-secondary-fg1: var(--secondary-fg1);
   --color-secondary-fg2: var(--secondary-fg2);
 
