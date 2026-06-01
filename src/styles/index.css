@@ -1,1 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Nunito:wght@400;600&display=swap');
 @import 'tailwindcss';
+
+@theme {
+  --font-main: 'Nunito', sans-serif;
+  --font-style: 'Share Tech Mono', monospace;
+
+  --color-bg-page: oklch(85.65% 0.011 76.6);
+  --color-bg-base: oklch(92.03% 0.009 78.3);
+  --color-bg-raised: oklch(94.1% 0.007 80.7);
+  --color-bg-sunken: oklch(81.92% 0.011 76.6);
+  --color-bg-widget: oklch(88.98% 0.009 78.3);
+
+  --color-accent: oklch(54.94% 0.1806 325);
+  --color-accent-light: oklch(82.06% 0.1199 325);
+  --color-accent-dim: oklch(41.94% 0.1605 325);
+
+  --color-fg: oklch(22.72% 0.008 84.59);
+  --color-fg-muted: oklch(45.27% 0.01 67.56);
+  --color-fg-faint: oklch(61.74% 0.009 56.22);
+  --color-fg-on-accent: oklch(18.17% 0.037 82.46);
+
+  /* --color-border-out: lch(95.6 2.8 87.2);
+  --color-border-in: lch(64.2 4.3 82.9);
+  --color-border-mid: lch(73.9 4.2 83.1); */
+
+  --color-bevel-light: oklch(96.21% 0.007 80.72);
+  --color-bevel-dark: oklch(67.2% 0.012 76.56);
+
+  --color-red: oklch(45.19% 0.159 26.38);
+  --color-green: oklch(46.99% 0.118 143.4);
+  --color-blue: oklch(41.36% 0.118 256.98);
+
+  --shadow-raise:
+    2px 2px 0 var(--color-bevel-dark), -1px -1px 0 var(--color-bevel-light);
+  --shadow-press:
+    inset 2px 2px 0 var(--color-bevel-dark),
+    inset -1px -1px 0 var(--color-bevel-light);
+  --shadow-well:
+    inset 1px 1px 3px rgb(0 0 0 / 0.25),
+    inset -1px -1px 1px rgb(255 255 255 / 0.4);
+  --shadow-raise-accent:
+    2px 2px 0 var(--color-bevel-dark), -1px -1px 0 var(--color-bevel-light),
+    inset 1px 1px 0 var(--color-accent-light),
+    inset -1px -1px 0 var(--color-accent-dim);
+  --shadow-press-accent:
+    inset 2px 2px 0 var(--color-accent-dim),
+    inset -1px -1px 0 var(--color-accent-light),
+    inset 1px 1px 3px rgb(0 0 0 / 0.3);
+}
+
+:root[data-theme='dark'] {
+  --color-bg-page: oklch(21.34% 0.006 91.6);
+  --color-bg-base: oklch(24.3% 0.015 96.6);
+  --color-bg-raised: oklch(27.62% 0.014 96.6);
+  --color-bg-sunken: oklch(18.67% 0.006 91.6);
+  --color-bg-widget: oklch(22.9% 0.015 101.6);
+
+  --color-accent: oklch(73.95% 0.1799 325);
+  --color-accent-light: oklch(88% 0.0798 325);
+  --color-accent-dim: oklch(35.88% 0.1682 325);
+
+  --color-fg: oklch(91.87% 0.017 91.56);
+  --color-fg-muted: oklch(65.75% 0.026 79.67);
+  --color-fg-faint: oklch(46.55% 0.016 67.41);
+  --color-fg-on-accent: oklch(14.25% 0.03 79.57);
+
+  /* --color-border-out: lch(23.3 10.6 102.4);
+    --color-border-in: lch(3.6 1.4 95.8);
+    --color-border-mid: lch(16.1 5.7 98.2); */
+
+  --color-bevel-light: oklch(33.78% 0.027 101.73);
+  --color-bevel-dark: oklch(15.91% 0.006 91.69);
+
+  --color-red: oklch(63.21% 0.147 22.18);
+  --color-green: oklch(68.64% 0.139 143.88);
+  --color-blue: oklch(64.85% 0.115 257.19);
+
+  --shadow-well:
+    inset 1px 1px 3px rgb(0 0 0 / 0.5),
+    inset -1px -1px 1px rgb(255 255 255 / 0.05);
+}
