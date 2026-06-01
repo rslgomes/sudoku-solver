@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <circle cx="16" cy="16" r="15" fill="currentColor"/>
+  <!-- tic-tac-toe grid -->
+  <line x1="12" y1="7" x2="12" y2="25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="20" y1="7" x2="20" y2="25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="7" y1="12" x2="25" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="7" y1="20" x2="25" y2="20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

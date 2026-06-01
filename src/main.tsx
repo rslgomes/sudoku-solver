@@ -1,10 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './pages'
+import { RouterProvider } from '@tanstack/react-router'
+import { router } from './router'
+import { PreferencesProvider } from './shared/contexts/PreferencesContext'
 import './styles/index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <PreferencesProvider>
+      <RouterProvider router={router} />
+    </PreferencesProvider>
   </StrictMode>
 )
