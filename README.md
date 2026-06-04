@@ -149,10 +149,6 @@ src/
 
 ## Roadmap
 
-### Routing
-
-- [ ] **Share route** — `/share?grid=<81-digit string>` redirects to `/` and calls `fillGrid` with the decoded puzzle; lets users share a specific puzzle via URL without exposing grid state in the home route's search params
-
 ### Home page (✓ for use)
 
 - [ ] **Logo redesign** — retro/old-computer-program aesthetic, pixel or monospace feel

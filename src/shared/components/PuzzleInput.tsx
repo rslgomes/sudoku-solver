@@ -2,20 +2,7 @@ import { useRef } from 'react'
 import { cn } from '../libs/cn'
 import Button from '../ui/Button'
 import { useGrid } from './PlayableGrid/contexts/gridContext'
-import type { Square, SudokuNumber } from './PlayableGrid/types'
-
-function parseDigits(raw: string): Square[] {
-  return Array.from({ length: 81 }, (_, i) => {
-    const n = parseInt(raw[i] ?? '0', 10)
-    const value = n >= 1 && n <= 9 ? (n as SudokuNumber) : null
-    return {
-      value,
-      notes: new Set<SudokuNumber>(),
-      color: null,
-      locked: value !== null,
-    }
-  })
-}
+import { parseGrid } from '../libs/gridCodec'
 
 export default function PuzzleInput({ className }: { className?: string }) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
@@ -133,7 +120,7 @@ export default function PuzzleInput({ className }: { className?: string }) {
       { length: 81 },
       (_, i) => gridRef.current.get(i)?.value || '0'
     ).join('')
-    fillGrid(parseDigits(raw))
+    fillGrid(parseGrid(raw))
   }
 
   return (
