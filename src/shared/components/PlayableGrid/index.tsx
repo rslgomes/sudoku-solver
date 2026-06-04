@@ -2,22 +2,16 @@ import PuzzleGrid from './PuzzleGrid'
 import Toolbox from './Toolbox'
 import Pad from './Pad'
 
-export type { PlayableGridProps } from './types'
+export type { GridController } from './types'
 
 export default function PlayableGrid() {
   return (
-    <div className="grid gap-2 w-full max-w-lg mx-auto p-4 grid-cols-[1fr_auto] [grid-template-areas:'puzzle_toolbox'_'pad_pad']">
-      <div className="[grid-area:puzzle]">
-        <PuzzleGrid />
+    <div className="">
+      <div className="mt-4 grid w-full max-w-lg mx-auto content-start gap-2 grid-cols-[1fr_auto] [grid-template-areas:'puzzle_toolbox']">
+        <PuzzleGrid className="[grid-area:puzzle]" />
+        <Toolbox className="[grid-area:toolbox] ml-2" />
       </div>
-
-      <div className="[grid-area:toolbox] pl-2">
-        <Toolbox />
-      </div>
-
-      <div className="[grid-area:pad] pt-1">
-        <Pad />
-      </div>
+      <Pad className="mt-3" />
     </div>
   )
 }

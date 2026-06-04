@@ -1,20 +1,25 @@
 import { useRef } from 'react'
 import { cn } from '../libs/cn'
 import Button from '../ui/Button'
-import { usePlayableGrid } from './PlayableGrid/context'
+import { useGrid } from './PlayableGrid/contexts/gridContext'
 import type { Square, SudokuNumber } from './PlayableGrid/types'
 
 function parseDigits(raw: string): Square[] {
   return Array.from({ length: 81 }, (_, i) => {
     const n = parseInt(raw[i] ?? '0', 10)
     const value = n >= 1 && n <= 9 ? (n as SudokuNumber) : null
-    return { value, notes: new Set<SudokuNumber>(), color: null, locked: value !== null }
+    return {
+      value,
+      notes: new Set<SudokuNumber>(),
+      color: null,
+      locked: value !== null,
+    }
   })
 }
 
-export default function PuzzleInput() {
+export default function PuzzleInput({ className }: { className?: string }) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
-  const { fillGrid } = usePlayableGrid()
+  const { fillGrid } = useGrid()
 
   const handleInputKeyDown = (e: React.KeyboardEvent, index: number) => {
     const moves: Partial<Record<string, number>> = {
@@ -132,13 +137,13 @@ export default function PuzzleInput() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={className}>
       <div
         role="grid"
         aria-label="Sudoku puzzle input"
         aria-rowcount={9}
         aria-colcount={9}
-        className="w-full aspect-square flex flex-col gap-px p-0.5 bg-accent"
+        className="w-full aspect-square flex flex-col gap-px p-0.5 bg-blue"
         onPaste={handlePaste}
       >
         {Array.from({ length: 9 }).map((_, row) => (
@@ -173,7 +178,7 @@ export default function PuzzleInput() {
                     maxLength={1}
                     tabIndex={idx === 0 ? 0 : -1}
                     onKeyDown={(e) => handleInputKeyDown(e, idx)}
-                    className="absolute inset-0 w-full h-full text-center"
+                    className="absolute inset-0 w-full h-full text-center text-fg"
                   />
                 </div>
               )
