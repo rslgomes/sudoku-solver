@@ -28,7 +28,7 @@ export default function MainLayout({ children, footer, header }: Props) {
         <VisuallyHidden>Skip to main content</VisuallyHidden>
       </a>
       <div className="shadow-raise">
-        {header && <HeaderMainLayout>{header}</HeaderMainLayout>}
+        <HeaderMainLayout>{header}</HeaderMainLayout>
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>

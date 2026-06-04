@@ -10,6 +10,7 @@ import undoIcon from '@assets/undo-icon.png'
 import lockIcon from '@assets/lock-icon.png'
 import { useConfig } from './contexts/configContext'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
+import PromptDialog from '../../ui/PromptDialog'
 
 const MODES: { mode: MoveMode; icon: string; title: string }[] = [
   { mode: 'pen', icon: penIcon, title: 'Pen — fill a square' },
@@ -68,21 +69,41 @@ export default function Toolbox({ className }: { className?: string }) {
       >
         <img src={undoIcon} alt="Undo" className="size-8" />
       </button>
-      <button
-        onClick={onReset}
-        type="button"
+      <PromptDialog
         title="Reset puzzle"
-        disabled={!canUndo}
-        className={cn(
-          'size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
-          'transition-[box-shadow,background-color] duration-75',
-          'shadow-raise bg-bg-raised text-fg hover:bg-bg-widget',
-          'disabled:text-fg-muted disabled:cursor-not-allowed disabled:hover:bg-bg-raised',
-          'disabled:[&_svg]:text-fg-muted'
+        prompt="Reset the puzzle to its initial state? Your progress and pencil marks will be lost."
+        options={[
+          {
+            name: 'Reset',
+            title: 'Reset to the initial puzzle',
+            icon: <ArrowPathIcon aria-hidden className="size-5 text-accent" />,
+            onSelect: onReset,
+            className: 'text-accent',
+          },
+          {
+            name: 'Keep playing',
+            title: 'Dismiss without resetting',
+            onSelect: () => {},
+          },
+        ]}
+        trigger={(open) => (
+          <button
+            onClick={open}
+            type="button"
+            title="Reset puzzle"
+            disabled={!canUndo}
+            className={cn(
+              'size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
+              'transition-[box-shadow,background-color] duration-75',
+              'shadow-raise bg-bg-raised text-fg hover:bg-bg-widget',
+              'disabled:text-fg-muted disabled:cursor-not-allowed disabled:hover:bg-bg-raised',
+              'disabled:[&_svg]:text-fg-muted'
+            )}
+          >
+            <ArrowPathIcon aria-hidden className="size-6 text-accent-dim" />
+          </button>
         )}
-      >
-        <ArrowPathIcon aria-hidden className="size-6 text-accent-dim" />
-      </button>
+      />
     </div>
   )
 }

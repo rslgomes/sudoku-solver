@@ -4,6 +4,8 @@ import ToggleButton from '@shared/ui/ToggleButton'
 import { MoonIcon, SparklesIcon, SunIcon } from '@heroicons/react/24/solid'
 import DialogTrigger from './DialogTrigger'
 import PuzzleInput from '@shared/components/PuzzleInput'
+import ShareButton from '@shared/components/ShareButton'
+import ModeTabs from '@shared/components/ModeTabs'
 
 export default function HeaderMainLayout({
   children,
@@ -23,6 +25,7 @@ export default function HeaderMainLayout({
           Sudoku Solver
         </h1>
         <div className="ml-auto flex gap-2" role="toolbar" aria-label="actions">
+          <ShareButton />
           <DialogTrigger
             classNames={{ trigger: 'h-8 p-1' }}
             buttonChildren={
@@ -48,7 +51,10 @@ export default function HeaderMainLayout({
           </ToggleButton>
         </div>
       </div>
-      <div className="flex gap-2 px-2 bg-bg-raised">{children}</div>
+      <div className="flex items-center gap-2 px-2 bg-bg-raised">
+        <ModeTabs />
+        {children}
+      </div>
     </header>
   )
 }

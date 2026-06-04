@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+import { useLocation } from '@tanstack/react-router'
 import PlayableGrid from '../../shared/components/PlayableGrid'
 import { GridContext } from '../../shared/components/PlayableGrid/contexts/gridContext'
 import MainLayout from '../../shared/layouts/MainLayout'
@@ -6,6 +8,7 @@ import type {
   SudokuNumber,
 } from '../../shared/components/PlayableGrid/types'
 import { usePadActions } from '@shared/components/PlayableGrid/hooks/usePadActions'
+import { parseGrid } from '@shared/libs/gridCodec'
 import {
   ConfigContext,
   useConfigContext,
@@ -31,10 +34,16 @@ export default function HomePage() {
   )
 }
 
-// Separate component so usePadActions (which reads ConfigContext) runs
-// *inside* the provider above.
 function GridProvider() {
+  const sharedGrid = useLocation({ select: (l) => l.state.initialGrid })
   const padActions = usePadActions({ initialGrid: getEmptyBoard() })
+
+  const fillGridRef = useRef(padActions.fillGrid)
+  fillGridRef.current = padActions.fillGrid
+  useEffect(() => {
+    if (sharedGrid) fillGridRef.current(parseGrid(sharedGrid))
+  }, [sharedGrid])
+
   return (
     <GridContext.Provider value={padActions}>
       <MainLayout header={<ConfigMenu />} footer={<Timer />}>
