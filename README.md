@@ -18,13 +18,26 @@ Interactive, accessible Sudoku tool built with **React 19**, **TypeScript**, **T
 |------|-------------|
 | Pen | Write a digit into selected cells; press same digit again to clear |
 | Pencil | Toggle candidate notes (small 3×3 mini-grid per cell) |
-| Eraser | Clear value and notes from selected cells |
+| Eraser | Click a square to clear its value and notes (no action button — click acts directly) |
 | Paint | Apply a background color to selected cells (6 colors + clear) |
-| Lock | Toggle cells between editable and given (locked) |
+| Lock | Click a square to toggle it between editable and given (locked) |
 
-**Undo**
+**Undo & Reset**
 
 - Up to 100-step undo history via `useReducer`
+- Undo + Reset buttons in the Toolbox (icon-based; reset uses a circular-arrow icon)
+
+**Highlighting & feedback** (gated by settings)
+
+- Peer highlight: on hover/focus, highlight the row, column, and box of the active cell (`highlightPeersOnHover`)
+- Same-number highlight: matching digits ringed green (`highlightSameNumber`)
+- Error cells ringed red — live while typing (`autoError`) or once the board is full
+- Transient "wrong" pulse animation on rejected moves (`blockWrong`)
+
+**Timer**
+
+- LED-style mm:ss timer in the footer (`Timer` + `LedNumber`), gated by `showTimer`
+- Starts when a puzzle is loaded; auto-pauses when the board is solved (`isSolved`)
 
 **Puzzle Input (aside panel)**
 
@@ -37,9 +50,15 @@ Interactive, accessible Sudoku tool built with **React 19**, **TypeScript**, **T
 
 **Layout**
 
-- Desktop: sidebar aside panel + main grid
-- Mobile: floating action button opens puzzle input in a modal dialog
+- Window-style chrome wraps the grid: accent **title bar** (logo, h1, "New" puzzle dialog trigger, dark-mode toggle) + **menu bar** (ConfigMenu) + **footer** (Timer)
+- Puzzle input opens in a modal dialog via the "New" button (`DialogTrigger`) — replaces the old mobile FAB / desktop aside (`FABDialogOrAside`, `MainHeader` removed)
 - Skip-to-main-content link (visible on focus)
+
+**Settings menu**
+
+- `ConfigMenu` dropdown (native `<details>`/`<summary>`) with `role="menuitemcheckbox"` items — stays open on toggle
+- Settings: highlight peers on hover, highlight same number, show remaining count, show lock tool, show timer, auto error, block wrong input, auto clear pencil marks
+- All settings held in `ConfigContext` (`GridSettings`) and consumed via `useConfig()`
 
 **Theming**
 
@@ -106,16 +125,22 @@ The grid implements the [WAI-ARIA Grid pattern](https://www.w3.org/WAI/ARIA/apg/
 ```
 src/
 ├── pages/
-│   ├── home/             # Home page + usePadActions hook
+│   ├── home/             # Home page; ConfigContext + GridContext providers
 │   └── solver/           # Solver page (stub)
 ├── shared/
 │   ├── components/
-│   │   ├── PlayableGrid/ # Grid, Toolbox, Pad, context, types, usePlay
-│   │   └── PuzzleInput/  # Puzzle entry form
+│   │   ├── PlayableGrid/
+│   │   │   ├── contexts/ # gridContext, configContext
+│   │   │   ├── hooks/    # usePadActions, usePlay, useSelection, ...
+│   │   │   ├── Toolbox, Pad, PuzzleGrid
+│   │   │   └── index     # grid + toolbox + pad layout
+│   │   ├── Timer/        # LED-style timer (index, LedNumber)
+│   │   ├── ConfigMenu    # settings dropdown
+│   │   └── PuzzleInput   # Puzzle entry form
 │   ├── contexts/         # PreferencesContext (theme)
-│   ├── layouts/          # MainLayout, MainHeader, FABDialogOrAside
+│   ├── layouts/          # MainLayout (Header, Footer, DialogTrigger); MainHeader + FABDialogOrAside removed
 │   ├── libs/             # cn helper, validation
-│   └── ui/               # Button, Dialog, ToggleButton, VisuallyHidden
+│   └── ui/               # Button, Dialog, DisclosureMenu, Dropdown, ToggleButton, VisuallyHidden
 ├── router.tsx
 └── main.tsx
 ```
@@ -128,19 +153,14 @@ src/
 
 - [ ] **Share route** — `/share?grid=<81-digit string>` redirects to `/` and calls `fillGrid` with the decoded puzzle; lets users share a specific puzzle via URL without exposing grid state in the home route's search params
 
-### Home page
+### Home page (✓ for use)
 
-- [ ] **Solve check** — detect when all 81 cells are filled and validate; fire immediately on last entry
-- [ ] **Sight highlight** — on hover or focus, highlight the row, column, and box of that cell
-- [ ] **Success / failure feedback** — per-cell error state (invalid digit) + full-board success/fail UI (banner, animation, or color wash)
+- [~] **Solve check** — detection done (`isFilled` / `isSolved`; timer pauses on solve). Pending: explicit "solved!" trigger/feedback on the last entry
+- [x] **Sight highlight** — peer (row/col/box) highlight on hover/focus, gated by `highlightPeersOnHover`
+- [~] **Success / failure feedback** — per-cell error ring + "wrong" pulse animation done. Pending: full-board success/fail UI (banner, animation, or color wash)
 - [ ] **Logo redesign** — retro/old-computer-program aesthetic, pixel or monospace feel
-- [ ] **Undo button styling** — replace plain "Un" text with proper icon and visual treatment matching the toolbox
-- [ ] **Settings dialog**
-  - Toggle: sight highlight on hover
-  - Toggle: auto solve-check on fill
-  - Toggle: show error indicators
-  - Toggle: animation speed (for solver)
-  - Wire every feature conditionally to these settings via a settings context
+- [x] **Undo button styling** — Toolbox undo/reset now icon-based, matching the toolbox
+- [x] **Settings menu** — `ConfigMenu` dropdown with all toggles wired to `ConfigContext`; features conditionally driven by `useConfig()`
 
 ### Solver page
 

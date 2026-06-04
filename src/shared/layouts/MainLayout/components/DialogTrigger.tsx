@@ -2,16 +2,23 @@ import { useRef } from 'react'
 import { cn } from '../../../libs/cn'
 import Dialog from '../../../ui/Dialog'
 import Button from '../../../ui/Button'
-import { SparklesIcon } from '@heroicons/react/24/solid'
 
 type Props = {
-  className?: string
+  classNames?: {
+    dialog?: string
+    trigger?: string
+  }
+  buttonChildren?: React.ReactNode
   children: React.ReactNode
 }
 
-export default function FABDialogOrAside({ className, children }: Props) {
+export default function DialogTrigger({
+  classNames,
+  buttonChildren,
+  children,
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const fabRef = useRef<HTMLButtonElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   function openDialog() {
     dialogRef.current?.showModal()
@@ -19,7 +26,7 @@ export default function FABDialogOrAside({ className, children }: Props) {
 
   function closeDialog() {
     dialogRef.current?.close()
-    fabRef.current?.focus()
+    triggerRef.current?.focus()
   }
 
   function handleBackdropClick(e: React.MouseEvent<HTMLDialogElement>) {
@@ -29,35 +36,22 @@ export default function FABDialogOrAside({ className, children }: Props) {
   return (
     <>
       <Button
-        ref={fabRef}
+        ref={triggerRef}
         type="button"
         onClick={openDialog}
         aria-haspopup="dialog"
         aria-label="Open puzzle input"
-        className={cn(
-          'bg-accent text-fg-on-accent',
-          'shadow-raise-accent',
-          'active:shadow-press-accent active:bg-accent-dim',
-          'fixed bottom-3 left-3 size-11 p-0 z-10',
-          'lg:hidden'
-        )}
+        className={classNames?.trigger}
       >
-        <SparklesIcon aria-hidden className="size-6 text-fg-on-accent" />
+        {buttonChildren}
       </Button>
-
-      <aside
-        aria-label="Puzzle input"
-        className={cn('hidden lg:block', 'bg-bg-base shadow-raise', className)}
-      >
-        {children}
-      </aside>
 
       <Dialog
         ref={dialogRef}
         onClick={handleBackdropClick}
         onClose={closeDialog}
         title="Puzzle Input"
-        className="w-full max-w-sm"
+        className={cn('w-full max-w-sm', classNames?.dialog)}
         headerClassName="pl-3"
       >
         {children}

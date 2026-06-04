@@ -1,5 +1,5 @@
 import { useReducer, useCallback } from 'react'
-import type { Move, Square } from './types'
+import type { Move, Square, SudokuNumber } from '../types'
 
 const GRID_SIZE = 81
 const HISTORY_LIMIT = 100
@@ -17,25 +17,41 @@ const getEmptyGrid = (): Square[] =>
 interface State {
   grid: Square[]
   history: Square[][]
+  initialGrid: Square[]
 }
 
 type Action =
-  | { type: 'move'; move: Move; jailBreak?: boolean }
+  | { type: 'move'; move: Move; jailBreak?: boolean; destructive?: boolean }
   | { type: 'fill'; squares: Square[]; lockFilled?: boolean }
   | { type: 'clear' }
   | { type: 'undo' }
+  | { type: 'reset' }
 
 const pushHistory = (state: State, nextGrid: Square[]): State => {
   if (nextGrid === state.grid) return state
   const history = [...state.history, state.grid]
+  const initialGrid = [...state.initialGrid]
   if (history.length > HISTORY_LIMIT) history.shift()
-  return { grid: nextGrid, history }
+  return { grid: nextGrid, history, initialGrid }
 }
+
+const notesEqual = (a: Set<SudokuNumber>, b: Set<SudokuNumber>): boolean => {
+  if (a.size !== b.size) return false
+  for (const n of a) if (!b.has(n)) return false
+  return true
+}
+
+const squaresEqual = (a: Square, b: Square): boolean =>
+  a.value === b.value &&
+  a.color === b.color &&
+  a.locked === b.locked &&
+  notesEqual(a.notes, b.notes)
 
 const applyMove = (
   grid: Square[],
   move: Move,
-  jailBreak: boolean
+  jailBreak: boolean,
+  destructive?: boolean
 ): Square[] => {
   if (move.targets.size === 0) return grid
 
@@ -51,17 +67,18 @@ const applyMove = (
 
   switch (move.mode) {
     case 'pen': {
-      const isRemove = editable.every((t) => next[t].value === move.data)
+      const isRemove =
+        destructive || editable.every((t) => next[t].value === move.data)
       for (const t of editable) {
         next[t] = { ...next[t], value: isRemove ? null : move.data }
       }
-      return next
+      break
     }
 
     case 'pencil': {
       const marks = [...move.data].map((mark) => ({
         mark,
-        isRemove: editable.every((t) => next[t].notes.has(mark)),
+        isRemove: destructive || editable.every((t) => next[t].notes.has(mark)),
       }))
       for (const t of editable) {
         const notes = new Set(next[t].notes)
@@ -71,14 +88,14 @@ const applyMove = (
         }
         next[t] = { ...next[t], notes }
       }
-      return next
+      break
     }
 
     case 'eraser': {
       for (const t of editable) {
         next[t] = { ...next[t], value: null, notes: new Set() }
       }
-      return next
+      break
     }
 
     case 'lock': {
@@ -86,16 +103,21 @@ const applyMove = (
       for (const t of editable) {
         next[t] = { ...next[t], locked: shouldLock }
       }
-      return next
+      break
     }
 
     case 'paint': {
       for (const t of editable) {
         next[t] = { ...next[t], color: move.data }
       }
-      return next
+      break
     }
   }
+
+  // Drop no-op moves so they never reach history (erase empty cell, paint
+  // same color, re-lock...). Only the touched cells can differ.
+  const changed = editable.some((t) => !squaresEqual(grid[t], next[t]))
+  return changed ? next : grid
 }
 
 const reducer = (state: State, action: Action): State => {
@@ -115,7 +137,7 @@ const reducer = (state: State, action: Action): State => {
             locked: sq.value !== null,
           }))
         : action.squares
-      return { grid: nextGrid, history: [] }
+      return { grid: nextGrid, history: [], initialGrid: nextGrid }
     }
     case 'clear': {
       return pushHistory(state, getEmptyGrid())
@@ -123,8 +145,16 @@ const reducer = (state: State, action: Action): State => {
     case 'undo': {
       if (state.history.length === 0) return state
       const history = [...state.history]
+      const initialGrid = state.initialGrid
       const previous = history.pop()!
-      return { grid: previous, history }
+      return { grid: previous, history, initialGrid }
+    }
+    case 'reset': {
+      return {
+        grid: state.initialGrid,
+        history: [],
+        initialGrid: state.initialGrid,
+      }
     }
   }
 }
@@ -132,14 +162,19 @@ const reducer = (state: State, action: Action): State => {
 const init = (initial?: Square[]): State => ({
   grid: initial ?? getEmptyGrid(),
   history: [],
+  initialGrid: initial ?? getEmptyGrid(),
 })
 
 export default function usePlay(initial?: Square[]) {
   const [state, dispatch] = useReducer(reducer, initial, init)
 
-  const handleMove = useCallback((move: Move, jailBreak = false) => {
-    dispatch({ type: 'move', move, jailBreak })
-  }, [])
+  const handleMove = useCallback(
+    (move: Move, ops?: { jailBreak?: boolean; destructive?: boolean }) => {
+      const { jailBreak = false, destructive = false } = ops ?? {}
+      dispatch({ type: 'move', move, jailBreak, destructive })
+    },
+    []
+  )
 
   const fillGrid = useCallback((squares: Square[], lockFilled = true) => {
     dispatch({ type: 'fill', squares, lockFilled })
@@ -153,12 +188,17 @@ export default function usePlay(initial?: Square[]) {
     dispatch({ type: 'undo' })
   }, [])
 
+  const reset = useCallback(() => {
+    dispatch({ type: 'reset' })
+  }, [])
+
   return {
     grid: state.grid,
     handleMove,
     fillGrid,
     clearGrid,
     undo,
+    reset,
     canUndo: state.history.length > 0,
   }
 }

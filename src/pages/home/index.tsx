@@ -1,12 +1,17 @@
 import PlayableGrid from '../../shared/components/PlayableGrid'
-import { PlayableGridCtx } from '../../shared/components/PlayableGrid/context'
+import { GridContext } from '../../shared/components/PlayableGrid/contexts/gridContext'
 import MainLayout from '../../shared/layouts/MainLayout'
 import type {
   Square,
   SudokuNumber,
 } from '../../shared/components/PlayableGrid/types'
-import PuzzleInput from '../../shared/components/PuzzleInput'
-import { usePadActions } from './usePadActions'
+import { usePadActions } from '@shared/components/PlayableGrid/hooks/usePadActions'
+import {
+  ConfigContext,
+  useConfigContext,
+} from '@shared/components/PlayableGrid/contexts/configContext'
+import ConfigMenu from '@shared/components/ConfigMenu'
+import Timer from '@shared/components/Timer'
 
 const getEmptyBoard = (): Square[] =>
   Array.from({ length: 81 }, () => ({
@@ -16,20 +21,24 @@ const getEmptyBoard = (): Square[] =>
     locked: false,
   }))
 
-const aside = (
-  <>
-    <h2 className="font-bold text-lg text-fg hidden lg:block">Puzzle input</h2>
-    <PuzzleInput />
-  </>
-)
-
 export default function HomePage() {
+  const config = useConfigContext()
+  return (
+    <ConfigContext.Provider value={config}>
+      <GridProvider />
+    </ConfigContext.Provider>
+  )
+}
+
+// Separate component so usePadActions (which reads ConfigContext) runs
+// *inside* the provider above.
+function GridProvider() {
   const padActions = usePadActions({ initialGrid: getEmptyBoard() })
   return (
-    <PlayableGridCtx.Provider value={padActions}>
-      <MainLayout aside={aside}>
+    <GridContext.Provider value={padActions}>
+      <MainLayout header={<ConfigMenu />} footer={<Timer />}>
         <PlayableGrid />
       </MainLayout>
-    </PlayableGridCtx.Provider>
+    </GridContext.Provider>
   )
 }

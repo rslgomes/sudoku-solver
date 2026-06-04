@@ -38,7 +38,7 @@ export default function Dialog({
     >
       <header
         className={cn(
-          'flex items-center justify-between bg-accent',
+          'flex items-center justify-between bg-blue',
           headerClassName
         )}
       >
