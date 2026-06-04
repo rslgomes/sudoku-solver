@@ -1,4 +1,5 @@
 import type { TimerController } from './hooks/useTimer'
+import type { SolveAlertController } from './hooks/useSolveAlert'
 
 export type SudokuNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
@@ -22,6 +23,14 @@ export type MoveMode = Move['mode']
 
 export type PulseKind = 'wrong'
 
+export interface GridMeta {
+  isFilled: boolean
+  isSolved: boolean
+  errors: Set<number>
+  peers: Set<number>[]
+  missingCount: Map<SudokuNumber, number>
+}
+
 export const MODE_LABEL: Record<MoveMode, { title: string; hint: string }> = {
   pen: { title: 'Pen', hint: 'Fill a square with a number' },
   pencil: { title: 'Pencil', hint: 'Mark candidate numbers in a square' },
@@ -32,6 +41,8 @@ export const MODE_LABEL: Record<MoveMode, { title: string; hint: string }> = {
 
 export interface GridController {
   grid: Square[]
+  meta: GridMeta
+  solveAlert: SolveAlertController
   activeMode: MoveMode
   selectedNumber: SudokuNumber | null
   selectedColor: string | null | undefined

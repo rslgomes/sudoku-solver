@@ -1,13 +1,11 @@
 import { useConfig } from '../PlayableGrid/contexts/configContext'
 import { useGrid } from '../PlayableGrid/contexts/gridContext'
-import useGridMeta from '../PlayableGrid/hooks/useGridMeta'
 import LedNumber, { type DIGIT } from './LedNumber'
 
 export default function Timer() {
-  const { grid, timer } = useGrid()
+  const { timer, meta } = useGrid()
   const { showTimer } = useConfig()
-  const { isSolved } = useGridMeta(grid)
-  if (isSolved) timer.pauseTimer()
+  if (meta.isSolved) timer.pauseTimer()
   const { minutes, seconds } = timer.value ?? { minutes: '00', seconds: '00' }
   if (!showTimer) return null
   return (

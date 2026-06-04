@@ -4,6 +4,8 @@ import { usePulse } from './usePulse'
 import { useSelection } from './useSelection'
 import { useMoves } from './useMoves'
 import useTimer from './useTimer'
+import useGridMeta from './useGridMeta'
+import useSolveAlert from './useSolveAlert'
 
 /** Composes board state, selection, pulse and move dispatch into one controller. */
 export function usePadActions({
@@ -12,6 +14,8 @@ export function usePadActions({
   initialGrid: Square[]
 }): GridController {
   const play = usePlay(initialGrid)
+  const meta = useGridMeta(play.grid)
+  const solveAlert = useSolveAlert(meta.isSolved)
   const timer = useTimer()
   const pulse = usePulse()
   const selection = useSelection()
@@ -59,6 +63,8 @@ export function usePadActions({
     onNumber: moves.onNumber,
 
     grid: play.grid,
+    meta,
+    solveAlert,
     canUndo: play.canUndo,
     onUndo: moves.onUndo,
     onReset: play.reset,

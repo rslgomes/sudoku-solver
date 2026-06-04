@@ -12,6 +12,7 @@ import {
 } from '@shared/components/PlayableGrid/contexts/configContext'
 import ConfigMenu from '@shared/components/ConfigMenu'
 import Timer from '@shared/components/Timer'
+import SolveAlert from '@shared/components/SolveAlert'
 
 const getEmptyBoard = (): Square[] =>
   Array.from({ length: 81 }, () => ({
@@ -39,6 +40,7 @@ function GridProvider() {
       <MainLayout header={<ConfigMenu />} footer={<Timer />}>
         <PlayableGrid />
       </MainLayout>
+      <SolveAlert />
     </GridContext.Provider>
   )
 }
