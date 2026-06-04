@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { SUDOKU_NUMBERS, type Square } from '../types'
+import { SUDOKU_NUMBERS, type GridMeta, type Square } from '../types'
 
 const getPeers = (sqIdx: number): Set<number> => {
   const row = Math.floor(sqIdx / 9)
@@ -36,7 +36,7 @@ const getErrors = (grid: Square[]): Set<number> => {
   return e
 }
 
-export default function useGridMeta(grid: Square[]) {
+export default function useGridMeta(grid: Square[]): GridMeta {
   const isFilled = useMemo(() => {
     return grid.every((square) => square.value !== null)
   }, [grid])

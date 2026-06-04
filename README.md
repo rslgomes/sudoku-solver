@@ -155,12 +155,7 @@ src/
 
 ### Home page (✓ for use)
 
-- [~] **Solve check** — detection done (`isFilled` / `isSolved`; timer pauses on solve). Pending: explicit "solved!" trigger/feedback on the last entry
-- [x] **Sight highlight** — peer (row/col/box) highlight on hover/focus, gated by `highlightPeersOnHover`
-- [~] **Success / failure feedback** — per-cell error ring + "wrong" pulse animation done. Pending: full-board success/fail UI (banner, animation, or color wash)
 - [ ] **Logo redesign** — retro/old-computer-program aesthetic, pixel or monospace feel
-- [x] **Undo button styling** — Toolbox undo/reset now icon-based, matching the toolbox
-- [x] **Settings menu** — `ConfigMenu` dropdown with all toggles wired to `ConfigContext`; features conditionally driven by `useConfig()`
 
 ### Solver page
 

@@ -3,7 +3,6 @@ import { SUDOKU_NUMBERS, MODE_LABEL } from './types'
 import type { MoveMode } from './types'
 import { useGrid } from './contexts/gridContext'
 import { useConfig } from './contexts/configContext'
-import useGridMeta from './hooks/useGridMeta'
 import { NoSymbolIcon } from '@heroicons/react/24/outline'
 
 const COLORS: (string | null)[] = [
@@ -48,10 +47,10 @@ export default function Pad({ className }: { className?: string }) {
     onNumber,
     onColor,
     registerInteractive,
-    grid,
+    meta,
   } = useGrid()
   const { showRemaining } = useConfig()
-  const { missingCount } = useGridMeta(grid)
+  const { missingCount } = meta
   if (mode === 'pen' || mode === 'pencil') {
     return (
       <PadShell mode={mode} className={className}>

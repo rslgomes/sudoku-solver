@@ -4,7 +4,6 @@ import { cn } from '../../libs/cn'
 import { SUDOKU_NUMBERS } from './types'
 import type { Square, SudokuNumber } from './types'
 import { useGrid } from './contexts/gridContext'
-import useGridMeta from './hooks/useGridMeta'
 import { useConfig } from './contexts/configContext'
 
 function Notes({ notes }: { notes: Set<SudokuNumber> }) {
@@ -48,8 +47,9 @@ export default function PuzzleGrid({ className }: { className?: string }) {
     onDelete,
     registerInteractive,
     pulsingSquares,
+    meta,
   } = useGrid()
-  const { errors, peers, isFilled } = useGridMeta(grid)
+  const { errors, peers, isFilled } = meta
   const { highlightPeersOnHover, autoError, highlightSameNumber } = useConfig()
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
