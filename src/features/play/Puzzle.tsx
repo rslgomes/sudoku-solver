@@ -3,7 +3,7 @@ import type { MouseEvent, KeyboardEvent } from 'react'
 import { cn } from '@shared/libs/cn'
 import SudokuGrid, { Notes } from '@shared/components/SudokuGrid'
 import type { Square, SudokuNumber } from './types'
-import { useController } from './contexts/controllerContext'
+import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
 
 function cellLabel(cell: Square, row: number, col: number): string {

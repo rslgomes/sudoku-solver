@@ -2,7 +2,7 @@ import { LockClosedIcon, PencilIcon } from '@heroicons/react/24/solid'
 import shareIcon from '@assets/share-icon.png'
 import Button from '@shared/ui/Button'
 import PromptDialog from '@shared/ui/PromptDialog'
-import { useController } from '../contexts/controllerContext'
+import { useController } from '../contexts/playControllerContext'
 import { serializeGrid } from '@shared/sudoku/codec'
 
 export default function ShareButton() {

@@ -1,4 +1,3 @@
-/** The 20 cells sharing a row, column or box with `sqIdx` (excluding itself). */
 const getPeers = (sqIdx: number): Set<number> => {
   const row = Math.floor(sqIdx / 9)
   const col = sqIdx % 9
@@ -15,5 +14,4 @@ const getPeers = (sqIdx: number): Set<number> => {
   return s
 }
 
-/** Precomputed peer sets, indexed by cell 0–80. */
 export const PEERS = Array.from({ length: 81 }, (_, i) => getPeers(i))

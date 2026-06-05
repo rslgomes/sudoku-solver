@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { cn } from '@shared/libs/cn'
 import Button from '@shared/ui/Button'
-import { useController } from '../contexts/controllerContext'
+import { useController } from '../contexts/playControllerContext'
 import { parseGrid } from '@shared/sudoku/codec'
 
 export default function PuzzleInput({ className }: { className?: string }) {

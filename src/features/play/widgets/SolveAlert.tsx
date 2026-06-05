@@ -1,4 +1,4 @@
-import { useController } from '../contexts/controllerContext'
+import { useController } from '../contexts/playControllerContext'
 import Dialog from '@shared/ui/Dialog'
 import Button from '@shared/ui/Button'
 

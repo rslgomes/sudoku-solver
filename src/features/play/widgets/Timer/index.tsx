@@ -1,5 +1,5 @@
 import { useConfig } from '../../contexts/playSettings'
-import { useController } from '../../contexts/controllerContext'
+import { useController } from '../../contexts/playControllerContext'
 import LedNumber, { type DIGIT } from './LedNumber'
 
 export default function Timer() {

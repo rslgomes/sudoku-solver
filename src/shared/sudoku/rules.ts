@@ -1,7 +1,6 @@
 import type { Square } from './types'
 import { PEERS } from './peers'
 
-/** Indices of every cell whose value collides with a peer. */
 export const getErrors = (grid: Square[]): Set<number> => {
   const e: Set<number> = new Set()
 

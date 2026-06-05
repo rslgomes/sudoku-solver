@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from '@tanstack/react-router'
 import PlayLayout from '@features/play/PlayLayout'
-import { ControllerContext } from '@features/play/contexts/controllerContext'
+import { ControllerContext } from '@features/play/contexts/playControllerContext'
 import {
   ConfigContext,
   useConfigContext,
