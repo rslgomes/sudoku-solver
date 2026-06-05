@@ -7,9 +7,15 @@ interface Props {
   children: React.ReactNode
   footer?: React.ReactNode
   header?: React.ReactNode
+  actions?: React.ReactNode
 }
 
-export default function MainLayout({ children, footer, header }: Props) {
+export default function MainLayout({
+  children,
+  footer,
+  header,
+  actions,
+}: Props) {
   return (
     <div
       className={cn(
@@ -28,7 +34,7 @@ export default function MainLayout({ children, footer, header }: Props) {
         <VisuallyHidden>Skip to main content</VisuallyHidden>
       </a>
       <div className="shadow-raise">
-        <HeaderMainLayout>{header}</HeaderMainLayout>
+        <HeaderMainLayout actions={actions}>{header}</HeaderMainLayout>
         <main id="main-content" tabIndex={-1}>
           {children}
         </main>

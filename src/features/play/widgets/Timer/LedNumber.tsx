@@ -27,7 +27,7 @@ const DIGIT_TO_LEDS: Record<DIGIT, LED[]> = {
 }
 
 // Single segment
-const T = 7 // semi-thickness
+const T = 10 // semi-thickness
 const L = 100 // length
 
 // SVG canvas

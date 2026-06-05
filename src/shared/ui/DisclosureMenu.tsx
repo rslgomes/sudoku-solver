@@ -1,18 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { cn } from '../libs/cn'
 
-/* ------------------------------------------------------------------ *
- * ToggleMenuItem
- *
- * A persistent on/off setting. role="switch" — NOT menuitemcheckbox —
- * because it does not dismiss the panel on activation and is reached
- * via native Tab order, not roving focus. aria-checked carries state.
- * ------------------------------------------------------------------ */
 interface ToggleMenuItemProps {
   label: string
   checked: boolean
   onChange: (next: boolean) => void
-  icon?: React.ReactNode
   className?: string
 }
 
@@ -20,7 +12,6 @@ export function ToggleMenuItem({
   label,
   checked,
   onChange,
-  icon,
   className,
 }: ToggleMenuItemProps) {
   return (
@@ -30,32 +21,30 @@ export function ToggleMenuItem({
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={cn(
-        'w-full text-left px-4 py-1 text-sm font-main text-fg',
+        'group w-full text-left px-4 py-1 text-sm font-main text-fg',
         'inline-flex items-center gap-2',
         'cursor-default select-none',
-        'hover:bg-accent hover:text-fg-on-accent',
-        'focus:outline-none focus-visible:bg-accent focus-visible:text-fg-on-accent',
+        'transition-[box-shadow,background-color] duration-75',
+        'hover:bg-bg-sunken',
+        'aria-checked:shadow-press',
+        'focus:outline-none focus-visible:bg-bg-sunken',
         'disabled:opacity-40 disabled:pointer-events-none',
         className
       )}
     >
       <span
         aria-hidden
-        className="size-3.5 shrink-0 flex items-center justify-center"
-      >
-        {checked && icon}
-      </span>
+        className={cn(
+          'size-2 shrink-0 rounded-full transition-[background-color] duration-150',
+          'bg-red/50 ring-red/30',
+          'group-aria-checked:bg-red group-aria-checked:ring-red/50 group-aria-checked:ring-2'
+        )}
+      />
       {label}
     </button>
   )
 }
 
-/* ------------------------------------------------------------------ *
- * ActionMenuItem
- *
- * A one-shot command that dismisses the panel on activation.
- * Plain button; closes the enclosing <details> after firing onClick.
- * ------------------------------------------------------------------ */
 interface ActionMenuItemProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode
 }
@@ -103,19 +92,9 @@ export function MenuSeparator({ className }: { className?: string }) {
   )
 }
 
-/* ------------------------------------------------------------------ *
- * DisclosureMenu
- *
- * A <details>/<summary> disclosure that reveals a panel of grouped
- * controls. This is the disclosure pattern, NOT the menu-button
- * pattern: no role="menu", no aria-haspopup, no roving tabindex.
- * Tab moves through the panel natively; Escape and outside-click
- * close it. Use this for settings panels and toggle groups.
- * ------------------------------------------------------------------ */
 interface Props {
   trigger: React.ReactNode
   children: React.ReactNode
-  /** Accessible name for the revealed group of controls. */
   label: string
   className?: string
   panelClassName?: string
@@ -136,9 +115,6 @@ export default function DisclosureMenu({
     if (focusTrigger) summaryRef.current?.focus()
   }
 
-  // Outside-click and Escape are external/global concerns — a valid
-  // use of an effect (document-level subscriptions), unlike relaying
-  // user interactions, which are handled inline at the call site.
   useEffect(() => {
     function onOutsideClick(e: MouseEvent) {
       if (ref.current?.open && !ref.current.contains(e.target as Node)) {

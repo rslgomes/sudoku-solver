@@ -1,12 +1,12 @@
 import { useRef } from 'react'
-import { cn } from '../libs/cn'
-import Button from '../ui/Button'
-import { useGrid } from './PlayableGrid/contexts/gridContext'
-import { parseGrid } from '../libs/gridCodec'
+import { cn } from '@shared/libs/cn'
+import Button from '@shared/ui/Button'
+import { useController } from '../contexts/controllerContext'
+import { parseGrid } from '@shared/sudoku/codec'
 
 export default function PuzzleInput({ className }: { className?: string }) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
-  const { fillGrid } = useGrid()
+  const { fillGrid } = useController()
 
   const handleInputKeyDown = (e: React.KeyboardEvent, index: number) => {
     const moves: Partial<Record<string, number>> = {

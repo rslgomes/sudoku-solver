@@ -1,16 +1,15 @@
 import { usePreferences } from '@shared/contexts/PreferencesContext'
 import Logo from '@assets/logo.svg?react'
 import ToggleButton from '@shared/ui/ToggleButton'
-import { MoonIcon, SparklesIcon, SunIcon } from '@heroicons/react/24/solid'
-import DialogTrigger from './DialogTrigger'
-import PuzzleInput from '@shared/components/PuzzleInput'
-import ShareButton from '@shared/components/ShareButton'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import ModeTabs from '@shared/components/ModeTabs'
 
 export default function HeaderMainLayout({
   children,
+  actions,
 }: {
   children: React.ReactNode
+  actions?: React.ReactNode
 }) {
   const { theme, toggleTheme } = usePreferences()
   const isDark = theme === 'dark'
@@ -25,18 +24,7 @@ export default function HeaderMainLayout({
           Sudoku Solver
         </h1>
         <div className="ml-auto flex gap-2" role="toolbar" aria-label="actions">
-          <ShareButton />
-          <DialogTrigger
-            classNames={{ trigger: 'h-8 p-1' }}
-            buttonChildren={
-              <span className="flex items-center justify-between gap-2">
-                <SparklesIcon aria-hidden className="size-6 text-blue" />
-                <span className="hidden lg:block">New</span>
-              </span>
-            }
-          >
-            <PuzzleInput className="mt-4 mb-4 px-2" />
-          </DialogTrigger>
+          {actions}
           <ToggleButton
             checked={isDark}
             onChange={toggleTheme}

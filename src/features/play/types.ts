@@ -1,16 +1,9 @@
 import type { TimerController } from './hooks/useTimer'
 import type { SolveAlertController } from './hooks/useSolveAlert'
+import type { SudokuNumber, Square } from '@shared/sudoku/types'
 
-export type SudokuNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-
-export const SUDOKU_NUMBERS: SudokuNumber[] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-export interface Square {
-  value: SudokuNumber | null
-  notes: Set<SudokuNumber>
-  color: string | null
-  locked: boolean
-}
+export type { SudokuNumber, Square } from '@shared/sudoku/types'
+export { SUDOKU_NUMBERS } from '@shared/sudoku/types'
 
 export type Move =
   | { mode: 'pen'; targets: Set<number>; data: SudokuNumber }
@@ -23,7 +16,7 @@ export type MoveMode = Move['mode']
 
 export type PulseKind = 'wrong'
 
-export interface GridMeta {
+export interface Meta {
   isFilled: boolean
   isSolved: boolean
   errors: Set<number>
@@ -39,9 +32,9 @@ export const MODE_LABEL: Record<MoveMode, { title: string; hint: string }> = {
   lock: { title: 'Lock', hint: 'Click a square to lock or unlock it' },
 }
 
-export interface GridController {
+export interface PlayController {
   grid: Square[]
-  meta: GridMeta
+  meta: Meta
   solveAlert: SolveAlertController
   activeMode: MoveMode
   selectedNumber: SudokuNumber | null

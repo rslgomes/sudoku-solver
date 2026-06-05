@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
-export type GridSettings = {
+export type PlaySettings = {
   highlightPeersOnHover: boolean
   showLockButton: boolean
   autoError: boolean
@@ -22,9 +22,9 @@ export type GridSettings = {
   setShowTimer: (value: boolean) => void
 }
 
-export const ConfigContext = createContext<GridSettings>(null!)
+export const ConfigContext = createContext<PlaySettings>(null!)
 
-export function useConfigContext(): GridSettings {
+export function useConfigContext(): PlaySettings {
   const [highlightPeersOnHover, setHighlightPeersOnHover] = useState(false)
   const [showLockButton, setShowLockButton] = useState(false)
   const [autoError, setAutoError] = useState(false)

@@ -1,13 +1,11 @@
 import {
   ConfigContext,
   useConfigContext,
-} from '@shared/components/PlayableGrid/contexts/configContext'
-import { GridContext } from '@shared/components/PlayableGrid/contexts/gridContext'
-import { usePadActions } from '@shared/components/PlayableGrid/hooks/usePadActions'
-import type {
-  Square,
-  SudokuNumber,
-} from '@shared/components/PlayableGrid/types'
+} from '@features/play/contexts/playSettings'
+import { ControllerContext } from '@features/play/contexts/controllerContext'
+import { useControllerOrchestrator } from '@features/play/hooks/useControllerOrchestrator'
+import type { Square, SudokuNumber } from '@features/play/types'
+import NewPuzzleButton from '@features/play/widgets/NewPuzzleButton'
 import MainLayout from '@shared/layouts/MainLayout'
 
 const getEmptyBoard = (): Square[] =>
@@ -22,18 +20,18 @@ export default function SolvePage() {
   const config = useConfigContext()
   return (
     <ConfigContext.Provider value={config}>
-      <SolverGrid />
+      <MainProvider />
     </ConfigContext.Provider>
   )
 }
 
-function SolverGrid() {
-  const padActions = usePadActions({ initialGrid: getEmptyBoard() })
+function MainProvider() {
+  const controller = useControllerOrchestrator({ initialGrid: getEmptyBoard() })
   return (
-    <GridContext.Provider value={padActions}>
-      <MainLayout>
+    <ControllerContext.Provider value={controller}>
+      <MainLayout actions={<NewPuzzleButton />}>
         <div>Solver</div>
       </MainLayout>
-    </GridContext.Provider>
+    </ControllerContext.Provider>
   )
 }

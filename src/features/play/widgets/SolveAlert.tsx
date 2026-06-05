@@ -1,9 +1,9 @@
-import { useGrid } from './PlayableGrid/contexts/gridContext'
+import { useController } from '../contexts/controllerContext'
 import Dialog from '@shared/ui/Dialog'
 import Button from '@shared/ui/Button'
 
 export default function SolveAlert() {
-  const { solveAlert, timer, onReset } = useGrid()
+  const { solveAlert, timer, onReset } = useController()
   const { minutes, seconds } = timer.value
 
   if (!solveAlert.open) return null

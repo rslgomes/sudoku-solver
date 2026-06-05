@@ -1,20 +1,19 @@
-import type { GridController, Square } from '../types'
+import type { PlayController, Square } from '../types'
 import usePlay from './usePlay'
 import { usePulse } from './usePulse'
 import { useSelection } from './useSelection'
 import { useMoves } from './useMoves'
 import useTimer from './useTimer'
-import useGridMeta from './useGridMeta'
+import useMeta from './useMeta'
 import useSolveAlert from './useSolveAlert'
 
-/** Composes board state, selection, pulse and move dispatch into one controller. */
-export function usePadActions({
+export function useControllerOrchestrator({
   initialGrid,
 }: {
   initialGrid: Square[]
-}): GridController {
+}): PlayController {
   const play = usePlay(initialGrid)
-  const meta = useGridMeta(play.grid)
+  const meta = useMeta(play.grid)
   const solveAlert = useSolveAlert(meta.isSolved)
   const timer = useTimer()
   const pulse = usePulse()
