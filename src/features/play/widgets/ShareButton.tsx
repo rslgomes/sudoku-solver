@@ -1,12 +1,12 @@
 import { LockClosedIcon, PencilIcon } from '@heroicons/react/24/solid'
 import shareIcon from '@assets/share-icon.png'
-import Button from '../ui/Button'
-import PromptDialog from '../ui/PromptDialog'
-import { useGrid } from './PlayableGrid/contexts/gridContext'
-import { serializeGrid } from '../libs/gridCodec'
+import Button from '@shared/ui/Button'
+import PromptDialog from '@shared/ui/PromptDialog'
+import { useController } from '../contexts/controllerContext'
+import { serializeGrid } from '@shared/sudoku/codec'
 
 export default function ShareButton() {
-  const { grid } = useGrid()
+  const { grid } = useController()
 
   const copyShareLink = (mode: 'initial' | 'current') => {
     const digits = serializeGrid(grid, mode)

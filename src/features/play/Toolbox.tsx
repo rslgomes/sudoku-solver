@@ -1,16 +1,16 @@
-import { cn } from '../../libs/cn'
+import { cn } from '@shared/libs/cn'
 import { MODE_LABEL } from './types'
 import type { MoveMode } from './types'
-import { useGrid } from './contexts/gridContext'
+import { useController } from './contexts/controllerContext'
 import penIcon from '@assets/pen-icon.png'
 import pencilIcon from '@assets/pencil-icon.png'
 import eraserIcon from '@assets/eraser-icon.png'
 import bucketIcon from '@assets/bucket-icon.png'
 import undoIcon from '@assets/undo-icon.png'
 import lockIcon from '@assets/lock-icon.png'
-import { useConfig } from './contexts/configContext'
+import { useConfig } from './contexts/playSettings'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
-import PromptDialog from '../../ui/PromptDialog'
+import PromptDialog from '@shared/ui/PromptDialog'
 
 const MODES: { mode: MoveMode; icon: string; title: string }[] = [
   { mode: 'pen', icon: penIcon, title: 'Pen — fill a square' },
@@ -28,7 +28,7 @@ export default function Toolbox({ className }: { className?: string }) {
     onUndo,
     canUndo,
     onReset,
-  } = useGrid()
+  } = useController()
   const { showLockButton } = useConfig()
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>

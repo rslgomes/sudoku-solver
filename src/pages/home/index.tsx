@@ -1,21 +1,20 @@
 import { useEffect, useRef } from 'react'
 import { useLocation } from '@tanstack/react-router'
-import PlayableGrid from '../../shared/components/PlayableGrid'
-import { GridContext } from '../../shared/components/PlayableGrid/contexts/gridContext'
-import MainLayout from '../../shared/layouts/MainLayout'
-import type {
-  Square,
-  SudokuNumber,
-} from '../../shared/components/PlayableGrid/types'
-import { usePadActions } from '@shared/components/PlayableGrid/hooks/usePadActions'
-import { parseGrid } from '@shared/libs/gridCodec'
+import PlayLayout from '@features/play/PlayLayout'
+import { ControllerContext } from '@features/play/contexts/controllerContext'
 import {
   ConfigContext,
   useConfigContext,
-} from '@shared/components/PlayableGrid/contexts/configContext'
-import ConfigMenu from '@shared/components/ConfigMenu'
-import Timer from '@shared/components/Timer'
-import SolveAlert from '@shared/components/SolveAlert'
+} from '@features/play/contexts/playSettings'
+import { useControllerOrchestrator } from '@features/play/hooks/useControllerOrchestrator'
+import type { Square, SudokuNumber } from '@features/play/types'
+import ConfigMenu from '@features/play/widgets/ConfigMenu'
+import Timer from '@features/play/widgets/Timer'
+import SolveAlert from '@features/play/widgets/SolveAlert'
+import ShareButton from '@features/play/widgets/ShareButton'
+import NewPuzzleButton from '@features/play/widgets/NewPuzzleButton'
+import MainLayout from '@shared/layouts/MainLayout'
+import { parseGrid } from '@shared/sudoku/codec'
 
 const getEmptyBoard = (): Square[] =>
   Array.from({ length: 81 }, () => ({
@@ -29,27 +28,36 @@ export default function HomePage() {
   const config = useConfigContext()
   return (
     <ConfigContext.Provider value={config}>
-      <GridProvider />
+      <MainProvider />
     </ConfigContext.Provider>
   )
 }
 
-function GridProvider() {
+function MainProvider() {
   const sharedGrid = useLocation({ select: (l) => l.state.initialGrid })
-  const padActions = usePadActions({ initialGrid: getEmptyBoard() })
+  const controller = useControllerOrchestrator({ initialGrid: getEmptyBoard() })
 
-  const fillGridRef = useRef(padActions.fillGrid)
-  fillGridRef.current = padActions.fillGrid
+  const fillGridRef = useRef(controller.fillGrid)
+  fillGridRef.current = controller.fillGrid
   useEffect(() => {
     if (sharedGrid) fillGridRef.current(parseGrid(sharedGrid))
   }, [sharedGrid])
 
   return (
-    <GridContext.Provider value={padActions}>
-      <MainLayout header={<ConfigMenu />} footer={<Timer />}>
-        <PlayableGrid />
+    <ControllerContext.Provider value={controller}>
+      <MainLayout
+        header={<ConfigMenu />}
+        footer={<Timer />}
+        actions={
+          <>
+            <ShareButton />
+            <NewPuzzleButton />
+          </>
+        }
+      >
+        <PlayLayout />
       </MainLayout>
       <SolveAlert />
-    </GridContext.Provider>
+    </ControllerContext.Provider>
   )
 }

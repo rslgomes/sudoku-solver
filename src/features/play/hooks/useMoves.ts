@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 import type { MoveMode, PulseKind, SudokuNumber } from '../types'
-import { useConfig } from '../contexts/configContext'
+import { useConfig } from '../contexts/playSettings'
 import usePlay from './usePlay'
-import { PEERS } from './useGridMeta'
+import { PEERS } from '@shared/sudoku/peers'
 
 type Play = ReturnType<typeof usePlay>
 
@@ -67,7 +67,7 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
     if (config.blockWrong) {
       const wrong = rejectConflicting(targets, n)
       if (wrong.size) pulse(wrong, 'wrong')
-      if (targets.size === 0) return // every target blocked
+      if (targets.size === 0) return
     }
 
     play.handleMove(
@@ -85,7 +85,6 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
     if (activeMode !== 'paint') return
     const targets = new Set(customSelection ?? selected)
     if (targets.size === 0) {
-      // toggle: re-clicking the active swatch deselects it (back to none)
       setSelectedColor(color === selectedColor ? undefined : color)
       return
     }

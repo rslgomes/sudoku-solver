@@ -5,13 +5,6 @@ export interface SolveAlertController {
   close: () => void
 }
 
-/**
- * Opens once on each unsolved→solved transition. State is adjusted during
- * render (no effect): the move that solves the grid flips `isSolved`, this runs
- * synchronously on that render and opens. Closing won't reopen until the grid is
- * unsolved and solved again. `isSolved` already requires zero errors, so a
- * filled-but-wrong grid never triggers it.
- */
 export default function useSolveAlert(isSolved: boolean): SolveAlertController {
   const [open, setOpen] = useState(false)
   const prevSolved = useRef(false)

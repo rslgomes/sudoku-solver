@@ -1,7 +1,9 @@
 import { cn } from '../libs/cn'
 
-interface Props
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
+interface Props extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'size'
+> {
   size?: 'sm' | 'md'
   children: React.ReactNode
 }
@@ -36,7 +38,6 @@ export default function ToggleButton({
     >
       <input type="checkbox" className="sr-only" {...delegated} />
 
-      {/* indicator LED — hollow = off, filled = on */}
       <span
         className={cn(
           'absolute rounded-full transition-[background-color] duration-150',
