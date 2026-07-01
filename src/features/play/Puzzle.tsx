@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import type { MouseEvent, KeyboardEvent } from 'react'
 import { cn } from '@shared/libs/cn'
-import SudokuGrid, { Notes } from '@shared/components/SudokuGrid'
+import SudokuGrid from '@shared/components/SudokuGrid'
+import CellContent from './CellContent'
 import type { Square, SudokuNumber } from './types'
 import { useController } from './contexts/controllerContext'
 import { useConfig } from './contexts/playSettings'
@@ -150,53 +151,19 @@ export default function Puzzle({ className }: { className?: string }) {
   const renderCell = (i: number) => {
     const { cell, isSelected, isPeer, isError, isSameNumber, pulse } =
       cellView(i)
-    const hasRound = isSameNumber || isError || pulse !== undefined
 
     return (
-      <>
-        <div
-          aria-hidden="true"
-          className={cn(
-            'absolute inset-0',
-            cell.locked ? 'bg-bg-sunken' : 'bg-bg-raised'
-          )}
-          style={cell.color ? { backgroundColor: cell.color } : undefined}
-        />
-
-        <div
-          aria-hidden="true"
-          className={cn(
-            'absolute inset-0 pointer-events-none',
-            isPeer && 'bg-accent-light/20',
-            isSelected && 'bg-accent-light/30'
-          )}
-        />
-
-        {cell.value === null && cell.notes.size > 0 && (
-          <div className="absolute inset-0">
-            <Notes notes={cell.notes} />
-          </div>
-        )}
-
-        <span
-          aria-hidden="true"
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <span
-            className={cn(
-              'flex items-center justify-center text-xl leading-none select-none',
-              cell.value &&
-                (cell.locked ? 'font-bold text-fg-muted' : 'text-fg'),
-              hasRound && 'size-8 rounded-full text-white',
-              isSameNumber && 'bg-green',
-              isError && 'bg-red',
-              pulse === 'wrong' && 'animate-pulse-wrong'
-            )}
-          >
-            {cell.value}
-          </span>
-        </span>
-      </>
+      <CellContent
+        value={cell.value}
+        locked={cell.locked}
+        color={cell.color}
+        notes={cell.notes}
+        isSelected={isSelected}
+        isPeer={isPeer}
+        isError={isError}
+        isSameNumber={isSameNumber}
+        pulse={pulse}
+      />
     )
   }
 
