@@ -1,7 +1,7 @@
 import { cn } from '@shared/libs/cn'
 import { SUDOKU_NUMBERS, MODE_LABEL } from './types'
 import type { MoveMode } from './types'
-import { useController } from './contexts/controllerContext'
+import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
 import { NoSymbolIcon } from '@heroicons/react/24/outline'
 

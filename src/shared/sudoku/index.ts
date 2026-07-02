@@ -1,4 +1,5 @@
 export * from './types'
 export * from './peers'
+export * from './units'
 export * from './rules'
 export * from './codec'

@@ -1,7 +1,7 @@
 import { cn } from '@shared/libs/cn'
 import { MODE_LABEL } from './types'
 import type { MoveMode } from './types'
-import { useController } from './contexts/controllerContext'
+import { useController } from './contexts/playControllerContext'
 import penIcon from '@assets/pen-icon.png'
 import pencilIcon from '@assets/pencil-icon.png'
 import eraserIcon from '@assets/eraser-icon.png'

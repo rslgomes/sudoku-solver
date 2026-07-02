@@ -4,7 +4,7 @@ import { cn } from '@shared/libs/cn'
 import SudokuGrid from '@shared/components/SudokuGrid'
 import CellContent from './CellContent'
 import type { Square, SudokuNumber } from './types'
-import { useController } from './contexts/controllerContext'
+import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
 
 function cellLabel(cell: Square, row: number, col: number): string {
