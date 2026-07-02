@@ -4,8 +4,11 @@ import Dialog from '@shared/ui/Dialog'
 import Button from '@shared/ui/Button'
 import PuzzleInput from './PuzzleInput'
 
-/** Header action: opens a dialog to type/paste a puzzle into the grid. */
-export default function NewPuzzleButton() {
+export default function NewPuzzleButton({
+  onSubmit,
+}: {
+  onSubmit: (raw: string) => void
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
@@ -42,7 +45,7 @@ export default function NewPuzzleButton() {
         className="w-full max-w-sm"
         headerClassName="pl-3"
       >
-        <PuzzleInput className="mt-4 mb-4 px-2" />
+        <PuzzleInput className="mt-4 mb-4 px-2" onSubmit={onSubmit} />
       </Dialog>
     </>
   )

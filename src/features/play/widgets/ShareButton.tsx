@@ -1,4 +1,3 @@
-import { LockClosedIcon, PencilIcon } from '@heroicons/react/24/solid'
 import shareIcon from '@assets/share-icon.png'
 import Button from '@shared/ui/Button'
 import PromptDialog from '@shared/ui/PromptDialog'
@@ -22,13 +21,13 @@ export default function ShareButton() {
         {
           name: 'Initial board',
           title: 'Share the original given puzzle',
-          icon: <LockClosedIcon aria-hidden className="size-5 text-blue" />,
+          icon: <></>,
           onSelect: () => copyShareLink('initial'),
         },
         {
           name: 'Current state',
           title: 'Share the board as it is now (no pencil marks)',
-          icon: <PencilIcon aria-hidden className="size-5 text-blue" />,
+          icon: <></>,
           onSelect: () => copyShareLink('current'),
         },
       ]}

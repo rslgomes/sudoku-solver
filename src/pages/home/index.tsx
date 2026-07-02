@@ -1,63 +1,38 @@
-import { useEffect, useRef } from 'react'
-import { useLocation } from '@tanstack/react-router'
-import PlayLayout from '@features/play/PlayLayout'
-import { ControllerContext } from '@features/play/contexts/playControllerContext'
-import {
-  ConfigContext,
-  useConfigContext,
-} from '@features/play/contexts/playSettings'
-import { useControllerOrchestrator } from '@features/play/hooks/useControllerOrchestrator'
-import type { Square, SudokuNumber } from '@features/play/types'
 import ConfigMenu from '@features/play/widgets/ConfigMenu'
 import Timer from '@features/play/widgets/Timer'
 import SolveAlert from '@features/play/widgets/SolveAlert'
 import ShareButton from '@features/play/widgets/ShareButton'
-import NewPuzzleButton from '@features/play/widgets/NewPuzzleButton'
+import NewPuzzleButton from '@shared/components/NewPuzzleButton'
 import MainLayout from '@shared/layouts/MainLayout'
+import { useController } from '@features/play/contexts/playControllerContext'
 import { parseGrid } from '@shared/sudoku/codec'
-
-const getEmptyBoard = (): Square[] =>
-  Array.from({ length: 81 }, () => ({
-    value: null as null,
-    notes: new Set<SudokuNumber>(),
-    color: null,
-    locked: false,
-  }))
+import Puzzle from '@features/play/Puzzle'
+import Toolbox from '@features/play/Toolbox'
+import Pad from '@features/play/Pad'
 
 export default function HomePage() {
-  const config = useConfigContext()
+  const { fillGrid } = useController()
   return (
-    <ConfigContext.Provider value={config}>
-      <MainProvider />
-    </ConfigContext.Provider>
-  )
-}
-
-function MainProvider() {
-  const sharedGrid = useLocation({ select: (l) => l.state.initialGrid })
-  const controller = useControllerOrchestrator({ initialGrid: getEmptyBoard() })
-
-  const fillGridRef = useRef(controller.fillGrid)
-  fillGridRef.current = controller.fillGrid
-  useEffect(() => {
-    if (sharedGrid) fillGridRef.current(parseGrid(sharedGrid))
-  }, [sharedGrid])
-
-  return (
-    <ControllerContext.Provider value={controller}>
+    <>
       <MainLayout
         header={<ConfigMenu />}
         footer={<Timer />}
         actions={
           <>
             <ShareButton />
-            <NewPuzzleButton />
+            <NewPuzzleButton onSubmit={(raw) => fillGrid(parseGrid(raw))} />
           </>
         }
       >
-        <PlayLayout />
+        <div>
+          <div className="mt-4 grid w-full max-w-lg mx-auto content-start gap-2 grid-cols-[1fr_auto] [grid-template-areas:'puzzle_toolbox']">
+            <Puzzle className="[grid-area:puzzle]" />
+            <Toolbox className="[grid-area:toolbox] ml-2" />
+          </div>
+          <Pad className="mt-3" />
+        </div>
       </MainLayout>
       <SolveAlert />
-    </ControllerContext.Provider>
+    </>
   )
 }

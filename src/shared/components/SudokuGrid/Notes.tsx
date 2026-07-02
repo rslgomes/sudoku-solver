@@ -1,9 +1,19 @@
 import { cn } from '../../libs/cn'
 import { SUDOKU_NUMBERS, type SudokuNumber } from '../../sudoku/types'
 
-export default function Notes({ notes }: { notes: Set<SudokuNumber> }) {
+export default function Notes({
+  notes,
+  ref,
+}: {
+  notes: Set<SudokuNumber>
+  ref?: React.Ref<HTMLDivElement>
+}) {
   return (
-    <div className="grid grid-cols-3 w-full h-full p-px" aria-hidden="true">
+    <div
+      className="grid grid-cols-3 w-full h-full p-px"
+      aria-hidden="true"
+      ref={ref}
+    >
       {SUDOKU_NUMBERS.map((n) => (
         <span
           key={n}

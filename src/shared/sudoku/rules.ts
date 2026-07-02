@@ -1,4 +1,4 @@
-import type { Square } from './types'
+import type { Square, SudokuNumber } from './types'
 import { PEERS } from './peers'
 
 export const getErrors = (grid: Square[]): Set<number> => {
@@ -16,4 +16,9 @@ export const getErrors = (grid: Square[]): Set<number> => {
   })
 
   return e
+}
+
+const NONE: ReadonlySet<SudokuNumber> = new Set()
+export function getCandidates(sq: Square): ReadonlySet<SudokuNumber> {
+  return sq.value ? NONE : sq.notes
 }
