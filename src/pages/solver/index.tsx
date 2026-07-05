@@ -13,12 +13,12 @@ export default function SolvePage() {
 
   return (
     <StageContext.Provider value={stage}>
-      <MainLayout actions={<NewPuzzleButton onSubmit={load} />}>
-        <div className="mt-4 grid w-full max-w-lg mx-auto content-start gap-2 grid-rows-[1fr_auto] [grid-template-areas:'stage'_'direction']">
-          <div className="[grid-area:stage]">
+      <MainLayout lockViewport actions={<NewPuzzleButton onSubmit={load} />}>
+        <div className="grid h-full w-full max-w-lg mx-auto gap-2 pt-4 grid-rows-[auto_minmax(0,1fr)] [grid-template-areas:'stage'_'direction']">
+          <div className="[grid-area:stage] mx-auto w-[min(100%,calc(100dvh-18rem))]">
             <GridStage />
           </div>
-          <div className="[grid-area:direction] flex flex-col items-stretch py-4">
+          <div className="[grid-area:direction] flex min-h-0 flex-col items-stretch pb-4">
             <WalkthroughControls />
             <ExplanationScript />
           </div>

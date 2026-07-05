@@ -30,6 +30,7 @@
   --color-red: oklch(45% 0.2 26.38);
   --color-green: oklch(46.99% 0.118 143.4);
   --color-blue: oklch(41.36% 0.118 256.98);
+  --color-yellow: oklch(70% 0.14 90);
 
   /* 7-segment LED timer display */
   --color-led-on: oklch(64.5% 0.23 25);

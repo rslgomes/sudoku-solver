@@ -19,6 +19,9 @@ function parse(description: string): Segment[] {
   return segments
 }
 
+const parseLines = (description: string): Segment[][] =>
+  description.split('\n').map(parse)
+
 export default function ExplanationScript() {
   const { currentScene, goToCue } = useStageContext()
   if (!currentScene.title) return null
@@ -27,25 +30,29 @@ export default function ExplanationScript() {
     <div
       role="article"
       aria-label="Explanation"
-      className="mt-2 rounded bg-bg-sunken p-3 font-main text-sm leading-relaxed text-fg shadow-press"
+      className="mt-2 flex min-h-0 flex-1 flex-col rounded bg-bg-sunken p-3 font-main text-sm leading-relaxed text-fg shadow-press"
     >
-      <h2 className="mb-1 font-semibold">{currentScene.title}</h2>
-      <p>
-        {parse(currentScene.explanation).map((seg, i) =>
-          seg.cue ? (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goToCue(seg.cue!)}
-              className="cursor-pointer rounded-sm text-accent underline decoration-dotted underline-offset-2 hover:bg-accent/10"
-            >
-              {seg.text}
-            </button>
-          ) : (
-            <span key={i}>{seg.text}</span>
-          )
-        )}
-      </p>
+      <h2 className="mb-1 shrink-0 font-semibold">{currentScene.title}</h2>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {parseLines(currentScene.explanation).map((line, lineIdx) => (
+          <p key={lineIdx}>
+            {line.map((seg, i) =>
+              seg.cue ? (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => goToCue(seg.cue!)}
+                  className="cursor-pointer rounded-sm text-accent underline decoration-dotted underline-offset-2 hover:bg-accent/10"
+                >
+                  {seg.text}
+                </button>
+              ) : (
+                <span key={i}>{seg.text}</span>
+              )
+            )}
+          </p>
+        ))}
+      </div>
     </div>
   )
 }
