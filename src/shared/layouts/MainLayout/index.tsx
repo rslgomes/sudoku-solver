@@ -8,6 +8,7 @@ interface Props {
   footer?: React.ReactNode
   header?: React.ReactNode
   actions?: React.ReactNode
+  lockViewport?: boolean
 }
 
 export default function MainLayout({
@@ -15,6 +16,7 @@ export default function MainLayout({
   footer,
   header,
   actions,
+  lockViewport,
 }: Props) {
   return (
     <div
@@ -23,7 +25,8 @@ export default function MainLayout({
         'bg-bg-page',
         'text-fg',
         'font-main',
-        'p-1 px-2 sm:p-4 sm:px-6'
+        'p-1 px-2 sm:p-4 sm:px-6',
+        lockViewport && 'flex h-dvh flex-col overflow-hidden'
       )}
     >
       <a
@@ -33,9 +36,18 @@ export default function MainLayout({
         ...
         <VisuallyHidden>Skip to main content</VisuallyHidden>
       </a>
-      <div className="shadow-raise">
+      <div
+        className={cn(
+          'shadow-raise',
+          lockViewport && 'flex min-h-0 flex-1 flex-col'
+        )}
+      >
         <HeaderMainLayout actions={actions}>{header}</HeaderMainLayout>
-        <main id="main-content" tabIndex={-1}>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className={cn(lockViewport && 'min-h-0 flex-1 overflow-hidden')}
+        >
           {children}
         </main>
         {footer && <FooterMainLayout>{footer}</FooterMainLayout>}

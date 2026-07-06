@@ -14,14 +14,12 @@ export function applySteps(board: Square[], steps: SceneStep[]): Square[] {
       const sq = next[Number(key)]
       if (delta.setValue) sq.value = delta.setValue
       if (delta.addNotes) for (const n of delta.addNotes) sq.notes.add(n)
-      if (delta.removeNotes) for (const n of delta.removeNotes) sq.notes.delete(n)
+      if (delta.removeNotes)
+        for (const n of delta.removeNotes) sq.notes.delete(n)
     }
   }
   return next
 }
-
-const applyDeltas = (board: Square[], scene: Scene): Square[] =>
-  applySteps(board, scene.steps)
 
 export function solve(initial: Square[]): Solution {
   let board = initial
@@ -31,7 +29,7 @@ export function solve(initial: Square[]): Solution {
       const scene = t.run(board)
       if (scene) {
         scenes.push(scene)
-        board = applyDeltas(board, scene)
+        board = applySteps(board, scene.steps)
         continue outer
       }
     }

@@ -91,6 +91,16 @@ Load a puzzle (`New`, same input widget as Play) and watch it get solved as a se
 | **clearNotes** | Removes peers' values from a cell's candidate notes                                            |
 | **bruteForce** | Constraint propagation (naked + hidden singles) + MRV backtracking; terminal fallback (Norvig) |
 
+### Brute-force walkthrough
+
+The brute-force solver doesn't just return placements — it exposes the search itself. `eliminate`/`assign` thread a `Trace` that records every forced resolution (naked/hidden single) and the contradiction that killed a branch. The solved path becomes a **spine** of `GuessNode`s attached to the scene (`BruteForceScene`), each carrying:
+
+- the MRV **guess square** and its candidate list
+- **doomed attempts** — failed values, their propagation cascades collapsed into depth-aligned **polyline layers** (`doomedLayers` + `zipConcat`): all branches at the same depth replay simultaneously, layer after layer
+- the **chosen cascade** — the value that held and the chain of resolutions it forced
+
+Wrong values are never written to the board — doomed branches render purely as lines and pulses. Each guess emits cued steps: the **search moment** (yellow pulse on the guess square), one replayable step per **doomed value** (red polylines, dead-end pulses), and the **chosen cascade** (green polyline + placements). The scene explanation narrates every guess, one line per node, with each square and value linked as a cue.
+
 ### Scene model (`features/explain/types.ts`)
 
 `Solution → Scene[] → SceneStep[] → Beat[]`.
@@ -105,10 +115,12 @@ Load a puzzle (`New`, same input widget as Play) and watch it get solved as a se
 
 - **GridStage** — renders the folded board and registers cell elements as animation targets.
 - **WalkthroughControls** — scene/step navigation + progress readout.
-- **ExplanationScript** — renders the scene prose; `{{id|text}}` markers become clickable **cues** that jump to the matching step.
-- **atoms** (`highlightValues`, `highlightNotes`) — inject self-cleaning overlay pulses via the Web Animations API, played on step entry (`snap` mode skips them; the fold already shows the result).
+- **ExplanationScript** — renders the scene prose line by line in a fixed-height scroll box; `{{id|text}}` markers become clickable **cues** that jump to the matching step.
+- **atoms** (`highlightValues`, `highlightNotes`, `drawPolyline`) — inject self-cleaning overlay pulses and SVG polylines via the Web Animations API, played on step entry (`snap` mode skips them; the fold already shows the result). All accept a color, and pulses/lines take a `delay` for layer-staggered playback (`BEAT_MS` per layer).
 
 On load the solve grid seeds every empty cell with all 9 candidate notes; `clearNotes` then prunes them.
+
+The solver page locks to the viewport (`MainLayout lockViewport`): the grid sizes from viewport dimensions only (`min(100%, 100dvh − reserve)`, always square), the explanation takes whatever height is left, and the page itself never scrolls.
 
 ---
 
@@ -164,7 +176,7 @@ bun preview   # preview production build
 - [x] Scene model — technique emits explanation + animation + deltas together
 - [x] Playback — seekable board fold, scene/step navigation, cued explanation
 - [x] Technique animation — pulse affected cells (`highlightValues` / `highlightNotes`)
+- [x] Brute-force guess playback — cued search/doomed/chosen steps with layered polylines
 - [ ] More techniques — hidden single next, then naked/pointing pairs, etc.
-- [ ] Brute-force propagation playback — animate the naked/hidden-single cascade, not just bulk placements
 - [ ] Walkthrough controls — autoplay with play / pause / speed
 - [ ] Cross-route puzzle transport — carry a puzzle between Play and Solve
