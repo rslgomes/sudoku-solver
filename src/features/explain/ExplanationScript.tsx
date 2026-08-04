@@ -23,7 +23,7 @@ const parseLines = (description: string): Segment[][] =>
   description.split('\n').map(parse)
 
 export default function ExplanationScript() {
-  const { currentScene, goToCue } = useStageContext()
+  const { currentScene, currentStep, goToCue } = useStageContext()
   if (!currentScene.title) return null
 
   return (
@@ -33,6 +33,11 @@ export default function ExplanationScript() {
       className="mt-2 flex min-h-0 flex-1 flex-col rounded bg-bg-sunken p-3 font-main text-sm leading-relaxed text-fg shadow-press"
     >
       <h2 className="mb-1 shrink-0 font-semibold">{currentScene.title}</h2>
+      {currentStep.note && (
+        <p className="mb-2 shrink-0 border-l-2 border-accent pl-2 text-fg-muted">
+          {currentStep.note}
+        </p>
+      )}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {parseLines(currentScene.explanation).map((line, lineIdx) => (
           <p key={lineIdx}>

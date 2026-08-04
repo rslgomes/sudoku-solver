@@ -20,6 +20,7 @@ export type Scene = {
 export type SceneStep = {
   beats: Beat[]
   cue?: string
+  note?: string
   delta?: Record<number, CellDelta>
 }
 

@@ -1,144 +1,151 @@
 // Constraint propagation + MRV search, after Peter Norvig,
-// "Solving Every Sudoku Puzzle" (https://norvig.com/sudoku.html).
+// "Solving Every Sudoku Puzzle" (https://norvig.com/sudoku.html), with the
+// recursion flattened into a worklist so propagation reads as breadth-first
+// waves rather than a depth-first walk.
 import {
   PEERS,
   UNITS,
   SUDOKU_NUMBERS,
+  getErrors,
   type Square,
   type SudokuNumber,
 } from '@shared/sudoku'
 import type { Technique } from '../types'
 import type { Beat, CellDelta, Scene, SceneStep } from '@features/explain/types'
-import { BEAT_MS, drawPolyline, highlightValues } from '@features/explain/lib/atoms'
+import {
+  BEAT_MS,
+  drawFan,
+  highlightNotes,
+  highlightValues,
+} from '@features/explain/lib/atoms'
 
-export type Contradiction =
+type Contradiction =
   | { kind: 'cellEmptied'; square: number }
   | { kind: 'valueTrapped'; unit: number[]; value: SudokuNumber }
 
-export type PropagationEvent =
-  | { kind: 'nakedSingle'; square: number; value: SudokuNumber }
-  | { kind: 'hiddenSingle'; square: number; value: SudokuNumber; unit: number[] }
+type Claim = { square: number; value: SudokuNumber; evidence: number[] }
 
-export type PolylineTerminal =
-  | { kind: 'dead'; square: number }
-  | { kind: 'branch'; square: number }
-  | { kind: 'solved' }
-
-export type Polyline = {
-  origin: { square: number; value: SudokuNumber }
-  events: PropagationEvent[]
-  terminal: PolylineTerminal
-}
-
-export type DoomedLayer = { polylines: Polyline[] }
-
-export type DoomedAttempt = {
+type Pulse = {
+  trigger: number
   value: SudokuNumber
-  layers: DoomedLayer[]
+  evidence: number[]
+  removals: Record<number, SudokuNumber[]>
+  resolved: Record<number, SudokuNumber>
+  contradiction: Contradiction | null
 }
 
-export type GuessNode = {
+type Propagation = { pulses: Pulse[]; contradiction: Contradiction | null }
+
+type Verdict = { kind: 'contradiction' | 'exhausted'; cells: number[] }
+
+type Attempt = { value: SudokuNumber; pulses: Pulse[]; verdict: Verdict }
+
+type GuessNode = {
   square: number
-  candidates: SudokuNumber[]
-  doomed: DoomedAttempt[]
-  chosen: { value: SudokuNumber; cascade: Polyline }
+  rejected: Attempt[]
+  chosen: { value: SudokuNumber; pulses: Pulse[] }
 }
-
-export type BruteForceScene = Scene & { spine: GuessNode[] }
 
 type Candidates = Set<SudokuNumber>[]
 
-type Trace = { events: PropagationEvent[]; contradiction: Contradiction | null }
-
-const freshTrace = (): Trace => ({ events: [], contradiction: null })
-
-function eliminate(
-  boardCandidates: Candidates,
-  squareIdx: number,
+const claim = (
+  square: number,
   value: SudokuNumber,
-  trace: Trace
-): boolean {
-  const candidates = boardCandidates[squareIdx]
-  if (!candidates.has(value)) return true
-  candidates.delete(value)
+  evidence: number[] = []
+): Claim => ({ square, value, evidence })
 
-  if (candidates.size === 0) {
-    trace.contradiction = { kind: 'cellEmptied', square: squareIdx }
-    return false
-  }
+function propagate(board: Candidates, seeds: Claim[]): Propagation {
+  const pulses: Pulse[] = []
+  const queue = [...seeds]
 
-  if (candidates.size === 1) {
-    const [soleCandidate] = candidates
-    trace.events.push({
-      kind: 'nakedSingle',
-      square: squareIdx,
-      value: soleCandidate,
-    })
-    for (const peerIdx of PEERS[squareIdx]) {
-      if (!eliminate(boardCandidates, peerIdx, soleCandidate, trace)) return false
+  while (queue.length > 0) {
+    const pending = queue.shift()!
+    const removals: Record<number, SudokuNumber[]> = {}
+    const resolved: Record<number, SudokuNumber> = {}
+    const followUps: Claim[] = []
+
+    const strike = (cell: number, value: SudokuNumber): Contradiction | null => {
+      const candidates = board[cell]
+      if (!candidates.has(value)) return null
+      candidates.delete(value)
+      ;(removals[cell] ??= []).push(value)
+
+      if (candidates.size === 0) return { kind: 'cellEmptied', square: cell }
+      if (candidates.size === 1) {
+        const [sole] = candidates
+        resolved[cell] = sole
+        followUps.push(claim(cell, sole))
+      }
+
+      for (const unit of UNITS[cell]) {
+        const homes = unit.filter((home) => board[home].has(value))
+        if (homes.length === 0) return { kind: 'valueTrapped', unit, value }
+        if (homes.length === 1 && board[homes[0]].size > 1)
+          followUps.push(claim(homes[0], value, unit))
+      }
+      return null
     }
-  }
 
-  for (const unit of UNITS[squareIdx]) {
-    const homesForValue = unit.filter((cell) => boardCandidates[cell].has(value))
-    if (homesForValue.length === 0) {
-      trace.contradiction = { kind: 'valueTrapped', unit, value }
-      return false
+    let contradiction: Contradiction | null = null
+    if (!board[pending.square].has(pending.value)) {
+      contradiction = { kind: 'cellEmptied', square: pending.square }
+    } else {
+      const wave: [number, SudokuNumber][] = [
+        ...[...board[pending.square]]
+          .filter((other) => other !== pending.value)
+          .map((other): [number, SudokuNumber] => [pending.square, other]),
+        ...[...PEERS[pending.square]].map(
+          (peer): [number, SudokuNumber] => [peer, pending.value]
+        ),
+      ]
+      for (const [cell, value] of wave) {
+        contradiction = strike(cell, value)
+        if (contradiction) break
+      }
     }
-    if (homesForValue.length === 1 && boardCandidates[homesForValue[0]].size > 1) {
-      trace.events.push({
-        kind: 'hiddenSingle',
-        square: homesForValue[0],
-        value,
-        unit,
+
+    if (contradiction || Object.keys(removals).length > 0)
+      pulses.push({
+        trigger: pending.square,
+        value: pending.value,
+        evidence: pending.evidence,
+        removals,
+        resolved,
+        contradiction,
       })
-      if (!assign(boardCandidates, homesForValue[0], value, trace)) return false
-    }
+
+    if (contradiction) return { pulses, contradiction }
+    queue.push(...followUps)
   }
 
-  return true
+  return { pulses, contradiction: null }
 }
 
-function assign(
-  boardCandidates: Candidates,
-  squareIdx: number,
-  value: SudokuNumber,
-  trace: Trace
-): boolean {
-  for (const otherCandidate of [...boardCandidates[squareIdx]]) {
-    if (otherCandidate === value) continue
-    if (!eliminate(boardCandidates, squareIdx, otherCandidate, trace)) return false
-  }
-  return true
-}
-
-function seedFromGivens(grid: Square[]): Candidates | null {
-  const boardCandidates: Candidates = Array.from(
+function seedFromGivens(grid: Square[]): {
+  board: Candidates
+  contradiction: Contradiction | null
+} {
+  const board: Candidates = Array.from(
     { length: 81 },
     () => new Set(SUDOKU_NUMBERS)
   )
-  for (let squareIdx = 0; squareIdx < 81; squareIdx++) {
-    const givenValue = grid[squareIdx].value
-    if (
-      givenValue &&
-      !assign(boardCandidates, squareIdx, givenValue, freshTrace())
-    )
-      return null
-  }
-  return boardCandidates
+  const givens = grid.flatMap((square, idx) =>
+    square.value ? [claim(idx, square.value)] : []
+  )
+  return { board, contradiction: propagate(board, givens).contradiction }
 }
 
-const isSolved = (boardCandidates: Candidates) =>
-  boardCandidates.every((candidates) => candidates.size === 1)
+const isSolved = (board: Candidates) =>
+  board.every((candidates) => candidates.size === 1)
 
-const cloneCandidates = (boardCandidates: Candidates): Candidates =>
-  boardCandidates.map((candidates) => new Set(candidates))
+const cloneCandidates = (board: Candidates): Candidates =>
+  board.map((candidates) => new Set(candidates))
 
-function mostConstrainedSquare(boardCandidates: Candidates): number {
+function mostConstrainedSquare(board: Candidates): number {
   let bestIdx = -1
   let fewestCandidates = 10
   for (let squareIdx = 0; squareIdx < 81; squareIdx++) {
-    const candidateCount = boardCandidates[squareIdx].size
+    const candidateCount = board[squareIdx].size
     if (candidateCount > 1 && candidateCount < fewestCandidates) {
       bestIdx = squareIdx
       fewestCandidates = candidateCount
@@ -148,112 +155,140 @@ function mostConstrainedSquare(boardCandidates: Candidates): number {
   return bestIdx
 }
 
-const contradictionSquare = (contradiction: Contradiction): number =>
-  contradiction.kind === 'cellEmptied' ? contradiction.square : contradiction.unit[0]
+const contradictionCells = (contradiction: Contradiction): number[] =>
+  contradiction.kind === 'cellEmptied'
+    ? [contradiction.square]
+    : contradiction.unit
 
-function makePolyline(
-  origin: Polyline['origin'],
-  events: PropagationEvent[],
-  terminal: PolylineTerminal
-): Polyline {
-  const seen = new Set([`${origin.square}:${origin.value}`])
-  const resolutions: PropagationEvent[] = []
-  for (const event of events) {
-    const key = `${event.square}:${event.value}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    resolutions.push(event)
-  }
-  return { origin, events: resolutions, terminal }
-}
+function search(board: Candidates): GuessNode[] | null {
+  if (isSolved(board)) return []
 
-function zipConcat(lists: DoomedLayer[][]): DoomedLayer[] {
-  const depth = lists.reduce((max, list) => Math.max(max, list.length), 0)
-  return Array.from({ length: depth }, (_, layerIdx) => ({
-    polylines: lists.flatMap((list) => list[layerIdx]?.polylines ?? []),
-  }))
-}
+  const guessSquare = mostConstrainedSquare(board)
+  if (guessSquare < 0) return null
 
-function doomedLayers(boardCandidates: Candidates): DoomedLayer[] {
-  const guessSquare = mostConstrainedSquare(boardCandidates)
-  const layer0: Polyline[] = []
-  const deeper: DoomedLayer[][] = []
+  const rejected: Attempt[] = []
+  for (const value of [...board[guessSquare]]) {
+    const branch = cloneCandidates(board)
+    const { pulses, contradiction } = propagate(branch, [
+      claim(guessSquare, value),
+    ])
 
-  for (const guessValue of boardCandidates[guessSquare]) {
-    const branch = cloneCandidates(boardCandidates)
-    const trace = freshTrace()
-    const origin = { square: guessSquare, value: guessValue }
-
-    if (!assign(branch, guessSquare, guessValue, trace)) {
-      layer0.push(
-        makePolyline(origin, trace.events, {
-          kind: 'dead',
-          square: contradictionSquare(trace.contradiction!),
-        })
-      )
-    } else {
-      layer0.push(
-        makePolyline(origin, trace.events, {
-          kind: 'branch',
-          square: mostConstrainedSquare(branch),
-        })
-      )
-      deeper.push(doomedLayers(branch))
+    if (contradiction) {
+      rejected.push({
+        value,
+        pulses,
+        verdict: { kind: 'contradiction', cells: contradictionCells(contradiction) },
+      })
+      continue
     }
+
+    const deeper = search(branch)
+    if (deeper)
+      return [
+        { square: guessSquare, rejected, chosen: { value, pulses } },
+        ...deeper,
+      ]
+
+    rejected.push({
+      value,
+      pulses,
+      verdict: { kind: 'exhausted', cells: [mostConstrainedSquare(branch)] },
+    })
   }
 
-  return [{ polylines: layer0 }, ...zipConcat(deeper)]
-}
-
-function newlyPlaced(
-  before: Candidates,
-  after: Candidates
-): Record<number, CellDelta> {
-  const delta: Record<number, CellDelta> = {}
-  for (let squareIdx = 0; squareIdx < 81; squareIdx++) {
-    if (before[squareIdx].size > 1 && after[squareIdx].size === 1) {
-      const [value] = after[squareIdx]
-      delta[squareIdx] = { setValue: value }
-    }
-  }
-  return delta
+  return null
 }
 
 const RED = 'var(--color-red)'
 const GREEN = 'var(--color-green)'
 const YELLOW = 'var(--color-yellow)'
+const BLUE = 'var(--color-blue)'
 
-function polylinePath(polyline: Polyline): number[] {
-  const path = [polyline.origin.square, ...polyline.events.map((e) => e.square)]
-  if (polyline.terminal.kind !== 'solved') path.push(polyline.terminal.square)
-  return path.filter((square, idx, arr) => idx === 0 || square !== arr[idx - 1])
+const THIRD_BEAT = BEAT_MS / 3
+
+const cellIndices = (record: Record<number, unknown>) =>
+  Object.keys(record).map(Number)
+
+function pulseBeats(pulse: Pulse, color: string): Beat[] {
+  const beats: Beat[] = [highlightValues([pulse.trigger], color)]
+  if (pulse.evidence.length > 0)
+    beats.push(highlightValues(pulse.evidence, BLUE))
+
+  const fanned = cellIndices(pulse.removals).filter(
+    (cell) => cell !== pulse.trigger
+  )
+  if (fanned.length > 0) beats.push(drawFan(pulse.trigger, fanned, color, THIRD_BEAT))
+
+  beats.push(highlightNotes(pulse.removals, RED, THIRD_BEAT * 2))
+
+  const settled = cellIndices(pulse.resolved)
+  if (settled.length > 0) beats.push(highlightValues(settled, color, BEAT_MS))
+  if (pulse.contradiction)
+    beats.push(
+      highlightValues(contradictionCells(pulse.contradiction), RED, BEAT_MS)
+    )
+
+  return beats
 }
 
-function doomedBeats(attempt: DoomedAttempt): Beat[] {
-  const beats: Beat[] = []
-  attempt.layers.forEach((layer, layerIdx) => {
-    const delay = layerIdx * BEAT_MS
-    for (const polyline of layer.polylines) {
-      const path = polylinePath(polyline)
-      if (path.length > 1) beats.push(drawPolyline(path, RED, delay))
-      if (polyline.terminal.kind === 'dead')
-        beats.push(
-          highlightValues([polyline.terminal.square], RED, delay + BEAT_MS / 2)
-        )
-      if (polyline.terminal.kind === 'branch')
-        beats.push(
-          highlightValues([polyline.terminal.square], YELLOW, delay + BEAT_MS / 2)
-        )
+function pulseDelta(pulse: Pulse, commit: boolean): Record<number, CellDelta> {
+  const delta: Record<number, CellDelta> = {}
+  for (const [key, values] of Object.entries(pulse.removals))
+    delta[Number(key)] = { removeNotes: values }
+  if (commit)
+    for (const [key, value] of Object.entries(pulse.resolved))
+      delta[Number(key)] = { ...delta[Number(key)], setValue: value }
+  return delta
+}
+
+function restoredNotes(pulses: Pulse[]): Record<number, SudokuNumber[]> {
+  const restored: Record<number, Set<SudokuNumber>> = {}
+  for (const pulse of pulses)
+    for (const [key, values] of Object.entries(pulse.removals)) {
+      const cell = Number(key)
+      restored[cell] ??= new Set()
+      for (const value of values) restored[cell].add(value)
     }
-  })
-  return beats
+  return Object.fromEntries(
+    Object.entries(restored).map(([cell, values]) => [cell, [...values]])
+  )
 }
 
-function chosenBeats(node: GuessNode): Beat[] {
-  const beats: Beat[] = [highlightValues([node.square], GREEN)]
-  const path = polylinePath(node.chosen.cascade)
-  if (path.length > 1) beats.push(drawPolyline(path, GREEN, BEAT_MS / 2))
-  return beats
+const squareName = (idx: number) => `R${Math.floor(idx / 9) + 1}C${(idx % 9) + 1}`
+
+function unitName(unit: number[]): string {
+  const [first] = unit
+  const row = Math.floor(first / 9)
+  const col = first % 9
+  if (unit.every((cell) => Math.floor(cell / 9) === row)) return `row ${row + 1}`
+  if (unit.every((cell) => cell % 9 === col)) return `column ${col + 1}`
+  return `box ${Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1}`
+}
+
+const plural = (count: number, noun: string) =>
+  `${count} ${noun}${count === 1 ? '' : 's'}`
+
+function contradictionNote(contradiction: Contradiction): string {
+  if (contradiction.kind === 'cellEmptied')
+    return `${squareName(contradiction.square)} has no candidates left`
+  return `${unitName(contradiction.unit)} has nowhere left to put ${contradiction.value}`
+}
+
+function pulseNote(pulse: Pulse, origin: boolean): string {
+  const placement = `${squareName(pulse.trigger)} = ${pulse.value}`
+  const because = origin
+    ? 'assumed'
+    : pulse.evidence.length > 0
+      ? `only home for ${pulse.value} in ${unitName(pulse.evidence)}`
+      : 'last candidate standing'
+  const struck = Object.values(pulse.removals).reduce(
+    (total, values) => total + values.length,
+    0
+  )
+  const head = `${placement} (${because}) clears ${plural(struck, 'candidate')}`
+  return pulse.contradiction
+    ? `${head} — ${contradictionNote(pulse.contradiction)}`
+    : head
 }
 
 const searchCue = (square: number) => `search-${square}`
@@ -261,134 +296,101 @@ const attemptCue = (square: number, value: SudokuNumber) =>
   `guess-${square}-${value}`
 const chosenCue = (square: number) => `chosen-${square}`
 
-type SearchResult = { steps: SceneStep[]; spine: GuessNode[] }
+function withCue(steps: SceneStep[], cue: string): SceneStep[] {
+  if (steps.length === 0) return steps
+  return [{ ...steps[0], cue }, ...steps.slice(1)]
+}
 
-function search(boardCandidates: Candidates): SearchResult | null {
-  if (isSolved(boardCandidates)) return { steps: [], spine: [] }
+function attemptSteps(square: number, attempt: Attempt): SceneStep[] {
+  const steps: SceneStep[] = attempt.pulses.map((pulse, idx) => ({
+    beats: pulseBeats(pulse, YELLOW),
+    note: `Trying ${attempt.value} — ${pulseNote(pulse, idx === 0)}`,
+    delta: pulseDelta(pulse, false),
+  }))
 
-  const guessSquare = mostConstrainedSquare(boardCandidates)
-  const candidates = [...boardCandidates[guessSquare]]
-  const doomed: DoomedAttempt[] = []
+  if (attempt.verdict.kind === 'exhausted')
+    steps.push({
+      beats: [highlightValues(attempt.verdict.cells, RED)],
+      note: `${attempt.value} survives here but every value deeper in this line fails, stalling at ${squareName(attempt.verdict.cells[0])}`,
+    })
 
-  for (const guessValue of candidates) {
-    const branch = cloneCandidates(boardCandidates)
-    const trace = freshTrace()
-    const origin = { square: guessSquare, value: guessValue }
-
-    if (!assign(branch, guessSquare, guessValue, trace)) {
-      doomed.push({
-        value: guessValue,
-        layers: [
-          {
-            polylines: [
-              makePolyline(origin, trace.events, {
-                kind: 'dead',
-                square: contradictionSquare(trace.contradiction!),
-              }),
-            ],
-          },
-        ],
-      })
-      continue
+  const restored = restoredNotes(attempt.pulses)
+  if (Object.keys(restored).length > 0) {
+    const delta: Record<number, CellDelta> = {}
+    let count = 0
+    for (const [key, values] of Object.entries(restored)) {
+      delta[Number(key)] = { addNotes: values }
+      count += values.length
     }
-
-    const deeper = search(branch)
-    if (deeper) {
-      const terminal: PolylineTerminal =
-        deeper.spine.length > 0
-          ? { kind: 'branch', square: deeper.spine[0].square }
-          : { kind: 'solved' }
-      const node: GuessNode = {
-        square: guessSquare,
-        candidates,
-        doomed,
-        chosen: {
-          value: guessValue,
-          cascade: makePolyline(origin, trace.events, terminal),
-        },
-      }
-      const delta = newlyPlaced(boardCandidates, branch)
-      const searchStep: SceneStep = {
-        beats: [highlightValues([guessSquare], YELLOW)],
-        cue: searchCue(guessSquare),
-      }
-      const doomedSteps: SceneStep[] = doomed.map((attempt) => ({
-        beats: doomedBeats(attempt),
-        cue: attemptCue(guessSquare, attempt.value),
-      }))
-      return {
-        steps: [
-          searchStep,
-          ...doomedSteps,
-          { beats: chosenBeats(node), delta, cue: chosenCue(guessSquare) },
-          ...deeper.steps,
-        ],
-        spine: [node, ...deeper.spine],
-      }
-    }
-
-    doomed.push({
-      value: guessValue,
-      layers: [
-        {
-          polylines: [
-            makePolyline(origin, trace.events, {
-              kind: 'branch',
-              square: mostConstrainedSquare(branch),
-            }),
-          ],
-        },
-        ...doomedLayers(branch),
-      ],
+    steps.push({
+      beats: [highlightNotes(restored, BLUE)],
+      note: `Backtrack: ${plural(count, 'candidate')} removed by ${attempt.value} go back`,
+      delta,
     })
   }
 
-  return null
+  return withCue(steps, attemptCue(square, attempt.value))
 }
 
-function run(grid: Square[]): BruteForceScene | null {
-  const boardCandidates = seedFromGivens(grid)
-  if (!boardCandidates) return null
+function nodeSteps(node: GuessNode): SceneStep[] {
+  const chosen = node.chosen.pulses.map((pulse, idx) => ({
+    beats: pulseBeats(pulse, GREEN),
+    note: pulseNote(pulse, idx === 0),
+    delta: pulseDelta(pulse, true),
+  }))
 
-  const steps: SceneStep[] = []
+  return [
+    {
+      beats: [highlightValues([node.square], YELLOW)],
+      cue: searchCue(node.square),
+      note: `${squareName(node.square)} has the fewest candidates left. Try each in turn.`,
+    },
+    ...node.rejected.flatMap((attempt) => attemptSteps(node.square, attempt)),
+    ...withCue(chosen, chosenCue(node.square)),
+  ]
+}
 
-  const forcedByGivens: Record<number, CellDelta> = {}
+function seedStep(grid: Square[], board: Candidates): SceneStep | null {
+  const delta: Record<number, CellDelta> = {}
   for (let squareIdx = 0; squareIdx < 81; squareIdx++) {
-    if (!grid[squareIdx].value && boardCandidates[squareIdx].size === 1) {
-      const [value] = boardCandidates[squareIdx]
-      forcedByGivens[squareIdx] = { setValue: value }
+    if (grid[squareIdx].value) continue
+
+    const candidates = board[squareIdx]
+    const notes = grid[squareIdx].notes
+    const cell: CellDelta = {}
+
+    const stale = [...notes].filter((note) => !candidates.has(note))
+    if (stale.length > 0) cell.removeNotes = stale
+    const missing = [...candidates].filter((note) => !notes.has(note))
+    if (missing.length > 0) cell.addNotes = missing
+    if (candidates.size === 1) {
+      const [value] = candidates
+      cell.setValue = value
     }
+
+    if (Object.keys(cell).length > 0) delta[squareIdx] = cell
   }
-  if (Object.keys(forcedByGivens).length > 0)
-    steps.push({ beats: [], delta: forcedByGivens })
 
-  const result = search(boardCandidates)
-  if (!result) return null
-  steps.push(...result.steps)
-
-  if (steps.length === 0) return null
-
-  return {
-    title: 'Brute force',
-    explanation: buildExplanation(result.spine),
-    steps,
-    spine: result.spine,
-  }
+  const forced = Object.values(delta).filter((cell) => cell.setValue).length
+  return Object.keys(delta).length > 0
+    ? {
+        beats: [],
+        note: `Givens propagated to their peers: ${plural(forced, 'cell')} forced outright.`,
+        delta,
+      }
+    : null
 }
-
-const squareName = (idx: number) =>
-  `R${Math.floor(idx / 9) + 1}C${(idx % 9) + 1}`
 
 function buildExplanation(spine: GuessNode[]): string {
   const base =
-    'No known technique applies. Guess the most constrained cell, propagate forced values, and backtrack on contradiction.'
+    'No known technique applies. Guess the most constrained cell, propagate each forced value to its peers one wave at a time, and backtrack on contradiction.'
   if (spine.length === 0) return base
 
   const sentences = spine.map((node) => {
     const square = `{{${searchCue(node.square)}|${squareName(node.square)}}}`
     const chosen = `{{${chosenCue(node.square)}|${node.chosen.value}}}`
-    if (node.doomed.length === 0) return `${square}: ${chosen} held`
-    const attempts = node.doomed
+    if (node.rejected.length === 0) return `${square}: ${chosen} held`
+    const attempts = node.rejected
       .map(
         (attempt) =>
           `{{${attemptCue(node.square, attempt.value)}|${attempt.value}}}`
@@ -397,6 +399,61 @@ function buildExplanation(spine: GuessNode[]): string {
     return `${square}: rejected ${attempts} before ${chosen} held`
   })
   return `${base}\nGuesses:\n${sentences.join('\n')}`
+}
+
+const DEAD_END_CUE = 'dead-end'
+
+function unsolvableScene(cells: number[], reason: string): Scene {
+  const pointer =
+    cells.length > 0
+      ? ` {{${DEAD_END_CUE}|${cells.map(squareName).join(', ')}}}`
+      : ''
+  return {
+    title: 'Brute force (no solution)',
+    explanation: `Brute force did not solve this puzzle — every line of play runs into a contradiction, so no completion exists.\n${reason}${pointer}`,
+    steps: [
+      {
+        beats: [highlightValues(cells, RED)],
+        note: reason,
+        cue: DEAD_END_CUE,
+      },
+    ],
+  }
+}
+
+function run(grid: Square[]): Scene | null {
+  const conflicts = [...getErrors(grid)]
+  if (conflicts.length > 0)
+    return unsolvableScene(
+      conflicts,
+      'Two of the givens already break sudoku rules:'
+    )
+
+  const { board, contradiction } = seedFromGivens(grid)
+  if (contradiction)
+    return unsolvableScene(
+      contradictionCells(contradiction),
+      `Propagating the givens alone is enough to break the grid — ${contradictionNote(contradiction)}:`
+    )
+
+  const spine = search(board)
+  if (!spine) {
+    const stall = mostConstrainedSquare(board)
+    return unsolvableScene(
+      stall >= 0 ? [stall] : [],
+      `Every value for ${squareName(stall)} was tried, and every line below each one dies:`
+    )
+  }
+
+  const seed = seedStep(grid, board)
+  const steps = [...(seed ? [seed] : []), ...spine.flatMap(nodeSteps)]
+  if (steps.length === 0) return null
+
+  return {
+    title: 'Brute force',
+    explanation: buildExplanation(spine),
+    steps,
+  }
 }
 
 const bruteForce: Technique = {

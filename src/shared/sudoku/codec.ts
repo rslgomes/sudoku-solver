@@ -23,3 +23,7 @@ export function serializeGrid(
     )
     .join('')
 }
+
+export function squareName(idx: number) {
+  return `R${Math.floor(idx / 9) + 1}C${(idx % 9) + 1}`
+}
