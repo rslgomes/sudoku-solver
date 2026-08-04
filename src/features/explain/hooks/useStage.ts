@@ -1,29 +1,25 @@
 import { useSolveGrid } from '@features/solve/contexts/solveGridContext'
 import { serializeGrid } from '@shared/sudoku'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { Scene, SceneStep, Solution } from '../types'
-import { applySteps, solve } from '@features/solve/solve'
+import type { Scene, SceneStep } from '../types'
+import { applySteps } from '@features/solve/solve'
 
 const EMPTY_SCENE: Scene = { title: '', explanation: '', steps: [] }
 const EMPTY_STEP: SceneStep = { beats: [] }
 
 export default function useStage() {
-  const { grid } = useSolveGrid()
+  const { grid, solution } = useSolveGrid()
   const key = useMemo(() => serializeGrid(grid, 'initial'), [grid])
-
-  const solution = useMemo<Solution>(() => {
-    if (!/[1-9]/.test(key)) return { initial: grid, scenes: [] }
-    return solve(grid)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key])
 
   const [scene, setScene] = useState(0)
   const [step, setStep] = useState(0)
   const [mode, setMode] = useState<'play' | 'snap'>('snap')
+  const [settled, setSettled] = useState(true)
   const [token, setToken] = useState(0)
 
   const roll = useCallback((m: 'play' | 'snap' = 'play') => {
     setMode(m)
+    setSettled(m === 'snap')
     setToken((prev) => prev + 1)
   }, [])
 
@@ -31,6 +27,7 @@ export default function useStage() {
     setScene(0)
     setStep(0)
     setMode('snap')
+    setSettled(true)
   }, [key])
 
   const currentScene = useMemo(
@@ -44,9 +41,9 @@ export default function useStage() {
 
   const board = useMemo(() => {
     const priorSteps = solution.scenes.slice(0, scene).flatMap((s) => s.steps)
-    const currentSteps = currentScene.steps.slice(0, step + 1)
+    const currentSteps = currentScene.steps.slice(0, settled ? step + 1 : step)
     return applySteps(solution.initial, [...priorSteps, ...currentSteps])
-  }, [solution, currentScene, scene, step])
+  }, [solution, currentScene, scene, step, settled])
 
   const cells = useRef(new Map<number, HTMLElement>())
   const registerCell = useCallback((i: number, el: HTMLElement | null) => {
@@ -58,9 +55,23 @@ export default function useStage() {
   }, [])
 
   useEffect(() => {
-    if (mode === 'snap' || currentStep.beats.length === 0) return
+    if (mode === 'snap' || currentStep.beats.length === 0) {
+      setSettled(true)
+      return
+    }
     const anims = currentStep.beats.flatMap((beat) => beat(cells.current))
-    return () => anims.forEach((a) => a.cancel())
+    if (anims.length === 0) {
+      setSettled(true)
+      return
+    }
+    let current = true
+    Promise.allSettled(anims.map((a) => a.finished)).then(() => {
+      if (current) setSettled(true)
+    })
+    return () => {
+      current = false
+      anims.forEach((a) => a.cancel())
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token])
 

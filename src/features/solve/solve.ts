@@ -1,11 +1,32 @@
 import type { Square } from '@shared/sudoku'
-import clearNotes from './techniques/clearNotes'
-import bruteForce from './techniques/bruteForce'
 import type { Scene, SceneStep, Solution } from '@features/explain/types'
+import {
+  checkEmptySquares,
+  clearNotes,
+  hiddenSingle,
+  bruteForce,
+  nakedSingle,
+  lockedCandidates,
+} from './techniques'
 
-const TECHNIQUES = [clearNotes, bruteForce]
+const TECHNIQUES = [
+  checkEmptySquares,
+  clearNotes,
+  nakedSingle,
+  hiddenSingle,
+  lockedCandidates,
+  bruteForce,
+]
 
 const isSolved = (board: Square[]) => board.every((sq) => sq.value !== null)
+
+const sameBoard = (a: Square[], b: Square[]) =>
+  a.every(
+    (sq, i) =>
+      sq.value === b[i].value &&
+      sq.notes.size === b[i].notes.size &&
+      [...sq.notes].every((n) => b[i].notes.has(n))
+  )
 
 export function applySteps(board: Square[], steps: SceneStep[]): Square[] {
   const next = board.map((sq) => ({ ...sq, notes: new Set(sq.notes) }))
@@ -29,7 +50,9 @@ export function solve(initial: Square[]): Solution {
       const scene = t.run(board)
       if (scene) {
         scenes.push(scene)
-        board = applySteps(board, scene.steps)
+        const next = applySteps(board, scene.steps)
+        if (sameBoard(board, next)) break outer
+        board = next
         continue outer
       }
     }

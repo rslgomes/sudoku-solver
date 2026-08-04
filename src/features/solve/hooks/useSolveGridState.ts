@@ -1,5 +1,12 @@
-import { parseGrid, SUDOKU_NUMBERS, type SudokuNumber } from '@shared/sudoku'
-import { useCallback, useState } from 'react'
+import {
+  parseGrid,
+  serializeGrid,
+  SUDOKU_NUMBERS,
+  type SudokuNumber,
+} from '@shared/sudoku'
+import { useCallback, useMemo, useState } from 'react'
+import type { Solution } from '@features/explain/types'
+import { solve } from '../solve'
 
 export default function useSolveGridState() {
   const [grid, setGrid] = useState(() => parseGrid(''))
@@ -12,8 +19,15 @@ export default function useSolveGridState() {
     setGrid(withNotes)
   }, [])
 
+  const solution = useMemo<Solution>(() => {
+    if (!/[1-9]/.test(serializeGrid(grid, 'initial')))
+      return { initial: grid, scenes: [] }
+    return solve(grid)
+  }, [grid])
+
   return {
     grid,
     load,
+    solution,
   }
 }
