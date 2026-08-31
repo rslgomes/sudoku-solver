@@ -1,4 +1,5 @@
 import { cn } from '@shared/libs/cn'
+import useAltHints from '@shared/hooks/useAltHints'
 import VisuallyHidden from '../../ui/VisuallyHidden'
 import HeaderMainLayout from './components/Header'
 import FooterMainLayout from './components/Footer'
@@ -18,6 +19,8 @@ export default function MainLayout({
   actions,
   lockViewport,
 }: Props) {
+  useAltHints()
+
   return (
     <div
       className={cn(
@@ -39,6 +42,7 @@ export default function MainLayout({
       <div
         className={cn(
           'shadow-raise',
+          'mx-auto w-full max-w-app',
           lockViewport && 'flex min-h-0 flex-1 flex-col'
         )}
       >

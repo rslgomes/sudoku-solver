@@ -12,7 +12,10 @@ export default function NewPuzzleButton({
   const dialogRef = useRef<HTMLDialogElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
-  const open = () => dialogRef.current?.showModal()
+  const open = () => {
+    dialogRef.current?.showModal()
+    dialogRef.current?.querySelector('input')?.focus()
+  }
   const close = () => {
     dialogRef.current?.close()
     triggerRef.current?.focus()

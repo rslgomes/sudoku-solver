@@ -2,6 +2,8 @@
 @import 'tailwindcss';
 
 @theme {
+  --container-app: 44rem;
+
   --font-main: 'Nunito', sans-serif;
   --font-style: 'Share Tech Mono', monospace;
 
@@ -67,6 +69,11 @@
       transform: scale(1.12);
     }
   }
+}
+
+:root[data-alt-hints] .accesskey {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 :root[data-theme='dark'] {

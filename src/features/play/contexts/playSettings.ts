@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext } from 'react'
+import usePersistentState from '@shared/hooks/usePersistentState'
 
 export type PlaySettings = {
   highlightPeersOnHover: boolean
@@ -25,16 +26,34 @@ export type PlaySettings = {
 export const ConfigContext = createContext<PlaySettings>(null!)
 
 export function useConfigContext(): PlaySettings {
-  const [highlightPeersOnHover, setHighlightPeersOnHover] = useState(false)
-  const [showLockButton, setShowLockButton] = useState(false)
-  const [autoError, setAutoError] = useState(false)
-  const [showRemaining, setShowRemaining] = useState(false)
-  const [highlightSameNumber, setHighlightSameNumber] = useState(false)
+  const [highlightPeersOnHover, setHighlightPeersOnHover] = usePersistentState(
+    'play:highlightPeersOnHover',
+    false
+  )
+  const [showLockButton, setShowLockButton] = usePersistentState(
+    'play:showLockButton',
+    false
+  )
+  const [autoError, setAutoError] = usePersistentState('play:autoError', false)
+  const [showRemaining, setShowRemaining] = usePersistentState(
+    'play:showRemaining',
+    false
+  )
+  const [highlightSameNumber, setHighlightSameNumber] = usePersistentState(
+    'play:highlightSameNumber',
+    false
+  )
 
-  const [autoClearPencil, setAutoClearPencil] = useState(false)
-  const [blockWrong, setBlockWrong] = useState(false)
+  const [autoClearPencil, setAutoClearPencil] = usePersistentState(
+    'play:autoClearPencil',
+    false
+  )
+  const [blockWrong, setBlockWrong] = usePersistentState(
+    'play:blockWrong',
+    false
+  )
 
-  const [showTimer, setShowTimer] = useState(false)
+  const [showTimer, setShowTimer] = usePersistentState('play:showTimer', false)
 
   return {
     highlightPeersOnHover,

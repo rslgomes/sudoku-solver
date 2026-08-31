@@ -11,6 +11,7 @@ interface Props extends Omit<
 export default function ToggleButton({
   className,
   size = 'md',
+  title,
   children,
   ...delegated
 }: Props) {
@@ -26,6 +27,7 @@ export default function ToggleButton({
 
   return (
     <label
+      title={title}
       className={cn(
         'group relative inline-flex items-center',
         'bg-bg-raised text-fg font-main shadow-raise',

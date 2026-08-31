@@ -1,4 +1,6 @@
+import { useRef } from 'react'
 import { cn } from '@shared/libs/cn'
+import useShortcuts from '@shared/hooks/useShortcuts'
 import { MODE_LABEL } from './types'
 import type { MoveMode } from './types'
 import { useController } from './contexts/playControllerContext'
@@ -12,13 +14,50 @@ import { useConfig } from './contexts/playSettings'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import PromptDialog from '@shared/ui/PromptDialog'
 
-const MODES: { mode: MoveMode; icon: string; title: string }[] = [
-  { mode: 'pen', icon: penIcon, title: 'Pen — fill a square' },
-  { mode: 'pencil', icon: pencilIcon, title: 'Pencil — mark candidates' },
-  { mode: 'eraser', icon: eraserIcon, title: 'Erase' },
-  { mode: 'paint', icon: bucketIcon, title: 'Color — paint background' },
-  { mode: 'lock', icon: lockIcon, title: 'Lock — fix given squares' },
-]
+const MODES: { mode: MoveMode; icon: string; title: string; shortcut: string }[] =
+  [
+    { mode: 'pen', icon: penIcon, title: 'Pen — fill a square', shortcut: 'p' },
+    {
+      mode: 'pencil',
+      icon: pencilIcon,
+      title: 'Pencil — mark candidates',
+      shortcut: 'n',
+    },
+    { mode: 'eraser', icon: eraserIcon, title: 'Erase', shortcut: 'e' },
+    {
+      mode: 'paint',
+      icon: bucketIcon,
+      title: 'Color — paint background',
+      shortcut: 'c',
+    },
+    {
+      mode: 'lock',
+      icon: lockIcon,
+      title: 'Lock — fix given squares',
+      shortcut: 'l',
+    },
+  ]
+
+const UNDO_SHORTCUT = 'ctrl+z'
+const RESET_SHORTCUT = 'alt+r'
+
+function shortcutLabel(shortcut: string) {
+  return shortcut
+    .split('+')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('+')
+}
+
+function ShortcutHint({ shortcut }: { shortcut: string }) {
+  return (
+    <span
+      aria-hidden
+      className="absolute bottom-0.5 right-1 font-style text-[10px] leading-none text-fg-faint"
+    >
+      {shortcutLabel(shortcut)}
+    </span>
+  )
+}
 
 export default function Toolbox({ className }: { className?: string }) {
   const {
@@ -30,22 +69,35 @@ export default function Toolbox({ className }: { className?: string }) {
     onReset,
   } = useController()
   const { showLockButton } = useConfig()
+  const resetTriggerRef = useRef<HTMLButtonElement>(null)
+
+  const visibleModes = MODES.filter(({ mode }) =>
+    mode === 'lock' ? showLockButton : true
+  )
+
+  useShortcuts({
+    ...Object.fromEntries(
+      visibleModes.map(({ mode, shortcut }) => [shortcut, () => onChange(mode)])
+    ),
+    [UNDO_SHORTCUT]: canUndo ? onUndo : undefined,
+    [RESET_SHORTCUT]: () => resetTriggerRef.current?.click(),
+  })
+
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <div role="status" aria-live="polite" className="sr-only">
         {MODE_LABEL[active].title} mode active — {MODE_LABEL[active].hint}
       </div>
-      {MODES.filter(({ mode }) =>
-        mode === 'lock' ? showLockButton : true
-      ).map(({ mode, icon, title }) => (
+      {visibleModes.map(({ mode, icon, title, shortcut }) => (
         <button
           key={mode}
           ref={registerInteractive}
           aria-pressed={active === mode}
-          title={title}
+          aria-keyshortcuts={shortcut}
+          title={`${title} (${shortcutLabel(shortcut)})`}
           onClick={() => onChange(mode)}
           className={cn(
-            'size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
+            'relative size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
             'transition-[box-shadow,background-color] duration-75',
             active === mode
               ? 'shadow-press-accent bg-bg-sunken text-accent'
@@ -53,15 +105,17 @@ export default function Toolbox({ className }: { className?: string }) {
           )}
         >
           <img src={icon} alt={title} className="size-8" />
+          <ShortcutHint shortcut={shortcut} />
         </button>
       ))}
       <button
         onClick={onUndo}
         type="button"
-        title="Undo"
+        aria-keyshortcuts={UNDO_SHORTCUT}
+        title={`Undo (${shortcutLabel(UNDO_SHORTCUT)})`}
         disabled={!canUndo}
         className={cn(
-          'size-12 mt-auto flex items-center justify-center font-style text-xs cursor-default select-none',
+          'relative size-12 mt-auto flex items-center justify-center font-style text-xs cursor-default select-none',
           'transition-[box-shadow,background-color] duration-75',
           'shadow-raise bg-bg-raised text-fg hover:bg-bg-widget',
           'disabled:text-fg-muted disabled:cursor-not-allowed disabled:hover:bg-bg-raised'
@@ -88,9 +142,11 @@ export default function Toolbox({ className }: { className?: string }) {
         ]}
         trigger={(open) => (
           <button
+            ref={resetTriggerRef}
             onClick={open}
             type="button"
-            title="Reset puzzle"
+            aria-keyshortcuts={RESET_SHORTCUT}
+            title={`Reset puzzle (${shortcutLabel(RESET_SHORTCUT)})`}
             disabled={!canUndo}
             className={cn(
               'size-12 flex items-center justify-center font-style text-xs cursor-default select-none',

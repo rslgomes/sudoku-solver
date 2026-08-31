@@ -139,8 +139,8 @@ describe('play grid — givens are read-only', () => {
     await user.click(cells[0])
     await user.keyboard('7')
 
-    await user.click(screen.getByText('Settings'))
-    await user.click(screen.getByRole('switch', { name: /Show lock tool/i }))
+    await user.click(screen.getByLabelText('Options', { selector: 'summary' }))
+    await user.click(screen.getByRole('menuitemcheckbox', { name: /Show lock tool/i }))
     await user.click(
       screen.getByRole('button', { name: /Lock — fix given squares/i })
     )

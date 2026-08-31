@@ -4,6 +4,7 @@ import type { MoveMode } from './types'
 import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
 import { NoSymbolIcon } from '@heroicons/react/24/outline'
+import AssistBar from './widgets/AssistBar'
 
 const COLORS: (string | null)[] = [
   'oklch(68% 0.12 60)', // orange
@@ -27,13 +28,16 @@ function PadShell({
   return (
     <div className={cn('bg-bg-base p-3 px-4', className)}>
       <div className="w-full max-w-lg mx-auto flex flex-col gap-2.5">
-        <div className="flex flex-col gap-0.5">
-          <span className="font-style text-sm text-accent uppercase tracking-widest">
-            {title}
-          </span>
-          <span className="font-main text-xs text-fg">{hint}</span>
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-style text-sm text-accent uppercase tracking-widest">
+              {title}
+            </span>
+            <span className="font-main text-xs text-fg">{hint}</span>
+          </div>
+          <AssistBar />
         </div>
-        {children}
+        <div className="min-h-29">{children}</div>
       </div>
     </div>
   )
@@ -104,9 +108,6 @@ export default function Pad({ className }: { className?: string }) {
               style={color ? { backgroundColor: color } : undefined}
             >
               {!color && <NoSymbolIcon className="size-6 text-accent-dim" />}
-              {/* {selectedColor === color && (
-                <CheckCircleIcon className="absolute z-10 -top-1 -right-1 size-3 flex items-center justify-center rounded-full text-accent bg-fg-on-accent text-[9px] leading-none" />
-              )} */}
             </button>
           ))}
         </div>

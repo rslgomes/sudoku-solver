@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useId, useRef } from 'react'
 import { cn } from '@shared/libs/cn'
 import Button from '@shared/ui/Button'
 
@@ -9,6 +9,7 @@ type PuzzleInputProps = {
 
 export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
+  const instructionsId = useId()
 
   const handleInputKeyDown = (e: React.KeyboardEvent, index: number) => {
     const moves: Partial<Record<string, number>> = {
@@ -127,9 +128,17 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className={className}>
+      <p id={instructionsId} className="mb-3 text-xs text-fg-muted">
+        Paste an 81-character puzzle anywhere in the grid, or type it in:{' '}
+        <b className="text-fg">1–9</b> fills and moves on,{' '}
+        <b className="text-fg">0</b> or <b className="text-fg">Space</b> leaves a
+        square blank, <b className="text-fg">Backspace</b> clears and steps back,{' '}
+        <b className="text-fg">arrow keys</b> move anywhere.
+      </p>
       <div
         role="grid"
         aria-label="Sudoku puzzle input"
+        aria-describedby={instructionsId}
         aria-rowcount={9}
         aria-colcount={9}
         className="w-full aspect-square flex flex-col gap-px p-0.5 bg-blue"
@@ -163,6 +172,7 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
                       else gridRef.current.delete(idx)
                     }}
                     type="text"
+                    aria-label={`Row ${row + 1}, column ${col + 1}`}
                     inputMode="numeric"
                     maxLength={1}
                     tabIndex={idx === 0 ? 0 : -1}

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cn } from '../libs/cn'
+import useShortcuts from '../hooks/useShortcuts'
 
 interface ToggleMenuItemProps {
   label: string
@@ -17,7 +18,8 @@ export function ToggleMenuItem({
   return (
     <button
       type="button"
-      role="switch"
+      role="menuitemcheckbox"
+      tabIndex={-1}
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={cn(
@@ -67,6 +69,8 @@ export function ActionMenuItem({
   return (
     <button
       type="button"
+      role="menuitem"
+      tabIndex={-1}
       className={cn(
         'w-full text-left px-4 py-1 text-sm font-main text-fg',
         'cursor-default select-none',
@@ -96,6 +100,7 @@ interface Props {
   trigger: React.ReactNode
   children: React.ReactNode
   label: string
+  altKey?: string
   className?: string
   panelClassName?: string
 }
@@ -104,15 +109,77 @@ export default function DisclosureMenu({
   trigger,
   children,
   label,
+  altKey,
   className,
   panelClassName,
 }: Props) {
   const ref = useRef<HTMLDetailsElement>(null)
   const summaryRef = useRef<HTMLElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+
+  function items() {
+    const found = panelRef.current?.querySelectorAll<HTMLButtonElement>(
+      'button:not([disabled])'
+    )
+    return found ? [...found] : []
+  }
+
+  function focusItem(index: number) {
+    const all = items()
+    if (all.length === 0) return
+    const wrapped = (index + all.length) % all.length
+    all[wrapped].focus()
+  }
 
   function close(focusTrigger: boolean) {
     if (ref.current) ref.current.open = false
+    setOpen(false)
     if (focusTrigger) summaryRef.current?.focus()
+  }
+
+  function handlePanelKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const all = items()
+    const current = all.indexOf(document.activeElement as HTMLButtonElement)
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        focusItem(current + 1)
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        focusItem(current - 1)
+        break
+      case 'Home':
+        e.preventDefault()
+        focusItem(0)
+        break
+      case 'End':
+        e.preventDefault()
+        focusItem(all.length - 1)
+        break
+      case 'Tab':
+        close(false)
+        break
+    }
+  }
+
+  useShortcuts({
+    [`alt+${altKey}`]: altKey ? () => toggle() : undefined,
+  })
+
+  function toggle() {
+    if (!ref.current) return
+    const next = !ref.current.open
+    ref.current.open = next
+    if (!next) summaryRef.current?.focus()
+  }
+
+  function handleToggle(e: React.SyntheticEvent<HTMLDetailsElement>) {
+    const isOpen = e.currentTarget.open
+    setOpen(isOpen)
+    if (isOpen) focusItem(0)
   }
 
   useEffect(() => {
@@ -136,9 +203,17 @@ export default function DisclosureMenu({
   }, [])
 
   return (
-    <details ref={ref} className={cn('group relative', className)}>
+    <details
+      ref={ref}
+      onToggle={handleToggle}
+      className={cn('group relative', className)}
+    >
       <summary
         ref={summaryRef as React.RefObject<HTMLElement>}
+        aria-label={label}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-keyshortcuts={altKey && `Alt+${altKey.toUpperCase()}`}
         className={cn(
           '[&::-webkit-details-marker]:hidden list-none',
           'inline-flex items-center gap-1.5 px-3 py-1 text-sm font-main text-fg',
@@ -153,8 +228,11 @@ export default function DisclosureMenu({
         {trigger}
       </summary>
       <div
-        role="group"
+        ref={panelRef}
+        role="menu"
+        tabIndex={-1}
         aria-label={label}
+        onKeyDown={handlePanelKeyDown}
         className={cn(
           'absolute top-full left-0 z-50 min-w-max',
           'bg-bg-raised shadow-raise',

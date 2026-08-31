@@ -1,5 +1,5 @@
-import { Cog6ToothIcon } from '@heroicons/react/24/solid'
 import { useConfig } from '../contexts/playSettings'
+import AccessKey from '@shared/ui/AccessKey'
 import DisclosureMenu, {
   MenuSeparator,
   ToggleMenuItem,
@@ -7,12 +7,6 @@ import DisclosureMenu, {
 
 export default function ConfigMenu() {
   const {
-    highlightPeersOnHover,
-    setHighlightPeersOnHover,
-    highlightSameNumber,
-    setHighlightSameNumber,
-    showRemaining,
-    setShowRemaining,
     showLockButton,
     setShowLockButton,
     showTimer,
@@ -27,29 +21,10 @@ export default function ConfigMenu() {
 
   return (
     <DisclosureMenu
-      label="Settings"
-      trigger={
-        <>
-          <Cog6ToothIcon className="size-4" aria-hidden />
-          Settings
-        </>
-      }
+      label="Options"
+      altKey="o"
+      trigger={<AccessKey char="o">Options</AccessKey>}
     >
-      <ToggleMenuItem
-        label="Highlight peers on hover"
-        checked={highlightPeersOnHover}
-        onChange={setHighlightPeersOnHover}
-      />
-      <ToggleMenuItem
-        label="Highlight same number"
-        checked={highlightSameNumber}
-        onChange={setHighlightSameNumber}
-      />
-      <ToggleMenuItem
-        label="Show remaining count"
-        checked={showRemaining}
-        onChange={setShowRemaining}
-      />
       <ToggleMenuItem
         label="Show lock tool"
         checked={showLockButton}
