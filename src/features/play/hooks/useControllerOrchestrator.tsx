@@ -1,4 +1,5 @@
 import type { PlayController, Square } from '../types'
+import { MODE_LABEL } from '../types'
 import usePlay from './usePlay'
 import { usePulse } from './usePulse'
 import { useSelection } from './useSelection'
@@ -6,12 +7,16 @@ import { useMoves } from './useMoves'
 import useTimer from './useTimer'
 import useMeta from './useMeta'
 import useSolveAlert from './useSolveAlert'
+import useAnnouncer from './useAnnouncer'
 
 export function useControllerOrchestrator({
   initialGrid,
 }: {
   initialGrid: Square[]
 }): PlayController {
+  const announcer = useAnnouncer(
+    `${MODE_LABEL.pen.title} mode active — ${MODE_LABEL.pen.hint}`
+  )
   const play = usePlay(initialGrid)
   const meta = useMeta(play.grid)
   const solveAlert = useSolveAlert(meta.isSolved)
@@ -23,6 +28,7 @@ export function useControllerOrchestrator({
     selected: selection.selected,
     pulse: pulse.pulse,
     clearSelection: selection.clearSelection,
+    announce: announcer.announce,
   })
 
   const onSelect = (i: number, toggle: boolean) => {
@@ -55,6 +61,7 @@ export function useControllerOrchestrator({
     selected: selection.selected,
     onSelect,
     clearSelection: selection.clearSelection,
+    selectMany: selection.selectMany,
     registerInteractive: selection.registerInteractive,
 
     selectedNumber: moves.selectedNumber,
@@ -66,7 +73,10 @@ export function useControllerOrchestrator({
     solveAlert,
     canUndo: play.canUndo,
     onUndo: moves.onUndo,
-    onReset: play.reset,
+    onReset: () => {
+      play.reset()
+      announcer.announce('Board reset')
+    },
     onDelete: moves.onDelete,
     onColor: moves.onColor,
     onAction: moves.onAction,
@@ -79,5 +89,6 @@ export function useControllerOrchestrator({
     clearPulsing: pulse.clearPulsing,
 
     timer,
+    announcement: announcer.message,
   }
 }

@@ -17,6 +17,7 @@ type CellRef = (el: HTMLDivElement | null) => (() => void) | void
 type SudokuGridProps = {
   className?: string
   ariaLabel?: string
+  ariaDescribedBy?: string
   multiselectable?: boolean
   containerRef?: CellRef
   renderCell: (index: number) => ReactNode
@@ -26,6 +27,7 @@ type SudokuGridProps = {
 export default function SudokuGrid({
   className,
   ariaLabel = 'Sudoku grid, 9 by 9',
+  ariaDescribedBy,
   multiselectable,
   containerRef,
   renderCell,
@@ -36,6 +38,7 @@ export default function SudokuGrid({
       ref={containerRef}
       role="grid"
       aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
       aria-multiselectable={multiselectable || undefined}
       className={cn(
         'grid grid-cols-9 w-full aspect-square border-2 border-fg/50 overflow-hidden',

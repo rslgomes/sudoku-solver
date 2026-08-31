@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { MODE_LABEL } from '../types'
 import type { MoveMode, PulseKind, SudokuNumber } from '../types'
 import { useConfig } from '../contexts/playSettings'
 import usePlay from './usePlay'
@@ -11,9 +12,20 @@ interface MovesDeps {
   selected: Set<number>
   pulse: (indices: Iterable<number>, kind: PulseKind) => void
   clearSelection: () => void
+  announce: (message: string) => void
 }
 
-export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
+function squareCount(n: number) {
+  return n === 1 ? '1 square' : `${n} squares`
+}
+
+export function useMoves({
+  play,
+  selected,
+  pulse,
+  clearSelection,
+  announce,
+}: MovesDeps) {
   const config = useConfig()
   const [activeMode, setActiveMode] = useState<MoveMode>('pen')
   const [selectedNumber, setSelectedNumber] = useState<SudokuNumber | null>(
@@ -26,9 +38,12 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
   const onModeChange = useCallback(
     (mode: MoveMode) => {
       if (mode === 'lock' || mode === 'eraser') clearSelection()
+      announce(
+        `${MODE_LABEL[mode].title} mode active — ${MODE_LABEL[mode].hint}`
+      )
       return setActiveMode(mode)
     },
-    [clearSelection]
+    [clearSelection, announce]
   )
 
   function rejectConflicting(targets: Set<number>, n: SudokuNumber) {
@@ -67,7 +82,10 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
     if (config.blockWrong) {
       const wrong = rejectConflicting(targets, n)
       if (wrong.size) pulse(wrong, 'wrong')
-      if (targets.size === 0) return
+      if (targets.size === 0) {
+        announce(`${n} conflicts with a peer — not placed`)
+        return
+      }
     }
 
     play.handleMove(
@@ -79,6 +97,12 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
     if (config.autoClearPencil && activeMode === 'pen') {
       clearPeerPencil(targets, n)
     }
+
+    announce(
+      activeMode === 'pen'
+        ? `${n} placed in ${squareCount(targets.size)}`
+        : `${n} noted in ${squareCount(targets.size)}`
+    )
   }
 
   function onColor(color: string | null, customSelection?: Set<number>) {
@@ -89,6 +113,11 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
       return
     }
     play.handleMove({ mode: 'paint', targets, data: color })
+    announce(
+      color
+        ? `Painted ${squareCount(targets.size)}`
+        : `Cleared color from ${squareCount(targets.size)}`
+    )
   }
 
   function onAction(customSelection?: Set<number>) {
@@ -99,18 +128,22 @@ export function useMoves({ play, selected, pulse, clearSelection }: MovesDeps) {
         ? { mode: 'eraser', targets, data: null }
         : { mode: 'lock', targets, data: null }
     )
+    announce(
+      activeMode === 'eraser'
+        ? `Erased ${squareCount(targets.size)}`
+        : `Toggled the lock on ${squareCount(targets.size)}`
+    )
   }
 
   function onDelete(customSelection?: Set<number>) {
-    play.handleMove({
-      mode: 'eraser',
-      targets: customSelection ?? selected,
-      data: null,
-    })
+    const targets = customSelection ?? selected
+    play.handleMove({ mode: 'eraser', targets, data: null })
+    announce(`Erased ${squareCount(targets.size)}`)
   }
 
   function onUndo() {
     play.undo()
+    announce('Move undone')
   }
 
   return {

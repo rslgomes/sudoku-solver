@@ -5,15 +5,8 @@ import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
 import { NoSymbolIcon } from '@heroicons/react/24/outline'
 import AssistBar from './widgets/AssistBar'
-
-const COLORS: (string | null)[] = [
-  'oklch(68% 0.12 60)', // orange
-  'oklch(72% 0.12 110)', // yellow-green
-  'oklch(64% 0.12 150)', // green
-  'oklch(65% 0.1 200)', // teal
-  'oklch(60% 0.11 250)', // blue
-  null,
-]
+import { PAINT_COLORS } from './colors'
+import useRovingTabIndex from '@shared/hooks/useRovingTabIndex'
 
 function PadShell({
   mode,
@@ -55,14 +48,43 @@ export default function Pad({ className }: { className?: string }) {
   } = useController()
   const { showRemaining } = useConfig()
   const { missingCount } = meta
-  if (mode === 'pen' || mode === 'pencil') {
+
+  const isNumberPad = mode === 'pen' || mode === 'pencil'
+  const { containerProps, itemProps } = useRovingTabIndex({
+    count: isNumberPad
+      ? SUDOKU_NUMBERS.length
+      : mode === 'paint'
+        ? PAINT_COLORS.length
+        : 0,
+    columns: isNumberPad ? 3 : PAINT_COLORS.length,
+  })
+
+  const rovingButton = (index: number) => {
+    const { ref: rovingRef, ...rest } = itemProps(index)
+    return {
+      ...rest,
+      ref: (el: HTMLButtonElement | null) => {
+        rovingRef(el)
+        return registerInteractive(el)
+      },
+    }
+  }
+
+  if (isNumberPad) {
     return (
       <PadShell mode={mode} className={className}>
-        <div className="grid grid-cols-3 gap-1 w-full">
-          {SUDOKU_NUMBERS.map((n) => (
+        <div
+          role="toolbar"
+          aria-label="Numbers"
+          {...containerProps}
+          className="grid grid-cols-3 gap-1 w-full"
+        >
+          {SUDOKU_NUMBERS.map((n, index) => (
             <button
               key={n}
-              ref={registerInteractive}
+              {...rovingButton(index)}
+              aria-pressed={selectedNumber === n}
+              aria-keyshortcuts={String(n)}
               onClick={() => onNumber(n)}
               className={cn(
                 'h-9 flex items-center justify-center',
@@ -90,13 +112,21 @@ export default function Pad({ className }: { className?: string }) {
   if (mode === 'paint') {
     return (
       <PadShell mode={mode} className={className}>
-        <div className="flex flex-wrap gap-1.5">
-          {COLORS.map((color, i) => (
+        <div
+          role="toolbar"
+          aria-label="Colors"
+          {...containerProps}
+          className="flex flex-wrap gap-1.5"
+        >
+          {PAINT_COLORS.map(({ name, value: color }, i) => (
             <button
-              key={i}
-              ref={registerInteractive}
+              key={name}
+              {...rovingButton(i)}
               onClick={() => onColor(color)}
-              title={color ?? 'Clear color'}
+              aria-label={name}
+              aria-pressed={selectedColor === color}
+              aria-keyshortcuts={String(i + 1)}
+              title={`${name} (${i + 1})`}
               className={cn(
                 'h-8 shadow-raise cursor-pointer select-none relative',
                 'transition-shadow duration-75 hover:opacity-80',

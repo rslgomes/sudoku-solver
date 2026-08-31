@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { cn } from '@shared/libs/cn'
 import useShortcuts from '@shared/hooks/useShortcuts'
-import { MODE_LABEL } from './types'
+import useRovingTabIndex from '@shared/hooks/useRovingTabIndex'
 import type { MoveMode } from './types'
 import { useController } from './contexts/playControllerContext'
 import penIcon from '@assets/pen-icon.png'
@@ -14,29 +14,33 @@ import { useConfig } from './contexts/playSettings'
 import { ArrowPathIcon } from '@heroicons/react/24/solid'
 import PromptDialog from '@shared/ui/PromptDialog'
 
-const MODES: { mode: MoveMode; icon: string; title: string; shortcut: string }[] =
-  [
-    { mode: 'pen', icon: penIcon, title: 'Pen — fill a square', shortcut: 'p' },
-    {
-      mode: 'pencil',
-      icon: pencilIcon,
-      title: 'Pencil — mark candidates',
-      shortcut: 'n',
-    },
-    { mode: 'eraser', icon: eraserIcon, title: 'Erase', shortcut: 'e' },
-    {
-      mode: 'paint',
-      icon: bucketIcon,
-      title: 'Color — paint background',
-      shortcut: 'c',
-    },
-    {
-      mode: 'lock',
-      icon: lockIcon,
-      title: 'Lock — fix given squares',
-      shortcut: 'l',
-    },
-  ]
+const MODES: {
+  mode: MoveMode
+  icon: string
+  title: string
+  shortcut: string
+}[] = [
+  { mode: 'pen', icon: penIcon, title: 'Pen — fill a square', shortcut: 'p' },
+  {
+    mode: 'pencil',
+    icon: pencilIcon,
+    title: 'Pencil — mark candidates',
+    shortcut: 'n',
+  },
+  { mode: 'eraser', icon: eraserIcon, title: 'Erase', shortcut: 'e' },
+  {
+    mode: 'paint',
+    icon: bucketIcon,
+    title: 'Color — paint background',
+    shortcut: 'c',
+  },
+  {
+    mode: 'lock',
+    icon: lockIcon,
+    title: 'Lock — fix given squares',
+    shortcut: 'l',
+  },
+]
 
 const UNDO_SHORTCUT = 'ctrl+z'
 const RESET_SHORTCUT = 'alt+r'
@@ -74,6 +78,9 @@ export default function Toolbox({ className }: { className?: string }) {
   const visibleModes = MODES.filter(({ mode }) =>
     mode === 'lock' ? showLockButton : true
   )
+  const { containerProps, itemProps } = useRovingTabIndex({
+    count: visibleModes.length + 2,
+  })
 
   useShortcuts({
     ...Object.fromEntries(
@@ -83,32 +90,57 @@ export default function Toolbox({ className }: { className?: string }) {
     [RESET_SHORTCUT]: () => resetTriggerRef.current?.click(),
   })
 
+  const rovingButton = (
+    index: number,
+    extra?: {
+      register?: boolean
+      forwardTo?: React.RefObject<HTMLButtonElement | null>
+    }
+  ) => {
+    const { ref: rovingRef, ...rest } = itemProps(index)
+    return {
+      ...rest,
+      ref: (el: HTMLButtonElement | null) => {
+        rovingRef(el)
+        if (extra?.forwardTo) extra.forwardTo.current = el
+        if (extra?.register) return registerInteractive(el)
+      },
+    }
+  }
+
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
-      <div role="status" aria-live="polite" className="sr-only">
-        {MODE_LABEL[active].title} mode active — {MODE_LABEL[active].hint}
+    <div
+      role="toolbar"
+      aria-orientation="vertical"
+      aria-label="Tools"
+      {...containerProps}
+      className={cn('flex flex-col gap-1.5', className)}
+    >
+      <div role="radiogroup" aria-label="Active tool" className="contents">
+        {visibleModes.map(({ mode, icon, title, shortcut }, index) => (
+          <button
+            key={mode}
+            {...rovingButton(index, { register: true })}
+            role="radio"
+            aria-checked={active === mode}
+            aria-keyshortcuts={shortcut}
+            title={`${title} (${shortcutLabel(shortcut)})`}
+            onClick={() => onChange(mode)}
+            className={cn(
+              'relative size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
+              'transition-[box-shadow,background-color] duration-75',
+              active === mode
+                ? 'shadow-press-accent bg-bg-sunken text-accent'
+                : 'shadow-raise bg-bg-raised text-fg hover:bg-bg-widget'
+            )}
+          >
+            <img src={icon} alt={title} className="size-8" />
+            <ShortcutHint shortcut={shortcut} />
+          </button>
+        ))}
       </div>
-      {visibleModes.map(({ mode, icon, title, shortcut }) => (
-        <button
-          key={mode}
-          ref={registerInteractive}
-          aria-pressed={active === mode}
-          aria-keyshortcuts={shortcut}
-          title={`${title} (${shortcutLabel(shortcut)})`}
-          onClick={() => onChange(mode)}
-          className={cn(
-            'relative size-12 flex items-center justify-center font-style text-xs cursor-default select-none',
-            'transition-[box-shadow,background-color] duration-75',
-            active === mode
-              ? 'shadow-press-accent bg-bg-sunken text-accent'
-              : 'shadow-raise bg-bg-raised text-fg hover:bg-bg-widget'
-          )}
-        >
-          <img src={icon} alt={title} className="size-8" />
-          <ShortcutHint shortcut={shortcut} />
-        </button>
-      ))}
       <button
+        {...rovingButton(visibleModes.length)}
         onClick={onUndo}
         type="button"
         aria-keyshortcuts={UNDO_SHORTCUT}
@@ -142,7 +174,9 @@ export default function Toolbox({ className }: { className?: string }) {
         ]}
         trigger={(open) => (
           <button
-            ref={resetTriggerRef}
+            {...rovingButton(visibleModes.length + 1, {
+              forwardTo: resetTriggerRef,
+            })}
             onClick={open}
             type="button"
             aria-keyshortcuts={RESET_SHORTCUT}

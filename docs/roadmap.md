@@ -2,6 +2,22 @@
 
 **Play** — logo redesign (retro / monospace pixel feel); ongoing QoL.
 
+## Accessibility (next focus)
+
+Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the-apg).
+
+- [x] Tool shortcuts (`P` `N` `E` `C` `L`, Ctrl+Z, Alt+R) with `aria-keyshortcuts`
+- [x] Alt-held access keys on menus, underline hidden at rest
+- [x] Options menu as a real `role="menu"` — arrow/Home/End/Escape navigation
+- [x] Puzzle dialog focuses the first square and describes its own rules
+- [x] Visible grid cursor — the focused cell was styled with `focus-visible` only, so a clicked cell gave no sign of where the next digit would land. Now a persistent `ring-2` on the focused cell, distinct from the selection's background tint (WCAG 2.4.7 Focus Visible, 2.4.13 Focus Appearance)
+- [x] Keyboard parity for eraser, lock, and paint — `Enter` applies the active tool, `1`–`6` pick a color
+- [x] Named paint swatches with `aria-pressed`; the number pad reports its pressed state too
+- [x] One tab stop per composite — Toolbox as a `toolbar` wrapping a mode `radiogroup`, Pad as a `toolbar`, both on roving `tabIndex`
+- [x] Grid selection keys — Shift+arrows, Ctrl+A, Shift+Space, Ctrl+Space, PageUp/PageDown by box
+- [x] Announcements — placements, rejected moves, erasures, undo, reset and mode changes share one `role="status"` region
+- [x] `?` shortcut dialog, also in the Options menu, plus `aria-describedby` on the grid
+
 ## Solve (current focus)
 
 - [x] Grid state lifted to the router — survives route changes
@@ -18,11 +34,13 @@
 - [ ] Cross-route puzzle transport — carry a puzzle between Play and Solve
 - [ ] Solve off the main thread — the pathological anti-brute-force puzzle freezes the UI for minutes
 
-## Testing (next focus)
+## Testing
 
-- [ ] Vitest + jsdom setup, WAAPI/SVG stubs for the animation layer
-- [ ] axe-core smoke tests per route
-- [ ] Behavioral a11y suite — the keyboard table as spec, roving tabIndex, `aria-selected`, live region
+- [x] Vitest + jsdom setup
+- [x] axe-core smoke tests per route
+- [x] Behavioral a11y suite — the keyboard tables as spec, roving tabIndex, `aria-selected`, live region
+- [x] Play-controls suite — shortcuts, assists, settings persistence, menu navigation
+- [ ] WAAPI/SVG stubs for the animation layer — needed to test the deferred delta in `play` mode
 - [ ] Technique evaluation harness — deferred, see [testing.md](testing.md#technique-evaluation--design-note-not-planned)
 
 ## Technique backlog

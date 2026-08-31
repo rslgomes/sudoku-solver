@@ -30,6 +30,15 @@ export function useSelection() {
     })
   }, [])
 
+  const selectMany = useCallback(
+    (indices: Iterable<number>, additive = false) => {
+      setSelected((prev) =>
+        additive ? new Set([...prev, ...indices]) : new Set(indices)
+      )
+    },
+    []
+  )
+
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
       const target = e.target as Node
@@ -42,5 +51,12 @@ export function useSelection() {
     return () => document.removeEventListener('pointerdown', onDown)
   }, [clearSelection])
 
-  return { selected, setSelected, select, clearSelection, registerInteractive }
+  return {
+    selected,
+    setSelected,
+    select,
+    selectMany,
+    clearSelection,
+    registerInteractive,
+  }
 }

@@ -1,11 +1,23 @@
-import { useMemo, useRef, useState } from 'react'
+import { useId, useMemo, useRef, useState } from 'react'
 import type { MouseEvent, KeyboardEvent } from 'react'
-import { cn } from '@shared/libs/cn'
 import SudokuGrid from '@shared/components/SudokuGrid'
 import CellContent from './CellContent'
 import type { Square, SudokuNumber } from './types'
 import { useController } from './contexts/playControllerContext'
 import { useConfig } from './contexts/playSettings'
+import { PAINT_COLORS } from './colors'
+
+const ALL_SQUARES = Array.from({ length: 81 }, (_, i) => i)
+
+const UNIT_ROW = (i: number) => {
+  const start = Math.floor(i / 9) * 9
+  return Array.from({ length: 9 }, (_, c) => start + c)
+}
+
+const UNIT_COLUMN = (i: number) => {
+  const col = i % 9
+  return Array.from({ length: 9 }, (_, r) => r * 9 + col)
+}
 
 function cellLabel(cell: Square, row: number, col: number): string {
   const pos = `Row ${row + 1}, column ${col + 1}`
@@ -24,9 +36,14 @@ export default function Puzzle({ className }: { className?: string }) {
     grid,
     selected,
     selectedNumber,
+    selectedColor,
+    activeMode,
     onSelect,
     clearSelection,
+    selectMany,
     onNumber,
+    onColor,
+    onAction,
     onDelete,
     registerInteractive,
     pulsingSquares,
@@ -39,6 +56,7 @@ export default function Puzzle({ className }: { className?: string }) {
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null)
   const rovingIndex = focusedIndex ?? 0
   const cellRefs = useRef<(HTMLDivElement | null)[]>([])
+  const instructionsId = useId()
 
   const activeIndex = hoveredIndex ?? focusedIndex
   const activePeers = useMemo(() => {
@@ -54,6 +72,7 @@ export default function Puzzle({ className }: { className?: string }) {
     return {
       cell,
       isSelected: selected.has(i),
+      isCursor: focusedIndex === i,
       isPeer: activePeers.has(i) && highlightPeersOnHover,
       isError: errors.has(i) && (autoError || isFilled),
       isSameNumber:
@@ -67,10 +86,52 @@ export default function Puzzle({ className }: { className?: string }) {
     onSelect(i, toggle)
   }
 
+  const moveCursor = (target: number, from: number, extend: boolean) => {
+    if (extend) selectMany([from, target], true)
+    cellRefs.current[target]?.focus()
+    setFocusedIndex(target)
+  }
+
+  const targetsFrom = (i: number) =>
+    selected.size === 0 ? new Set([i]) : selected
+
+  const applyActiveTool = (targets: Set<number>) => {
+    if (activeMode === 'eraser' || activeMode === 'lock') {
+      onAction?.(targets)
+      return
+    }
+    if (activeMode === 'paint') {
+      if (selectedColor !== undefined) onColor?.(selectedColor, targets)
+      return
+    }
+    if (selectedNumber !== null) onNumber?.(selectedNumber, targets)
+  }
+
   const handleKeyDown = (e: KeyboardEvent, i: number) => {
     const row = Math.floor(i / 9)
     const col = i % 9
     let target: number | null = null
+
+    if (e.key === ' ' && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      const unit = e.shiftKey ? UNIT_ROW : UNIT_COLUMN
+      selectMany(unit(i), true)
+      return
+    }
+
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+      e.preventDefault()
+      selectMany(ALL_SQUARES)
+      return
+    }
+
+    if (e.key === 'PageUp' || e.key === 'PageDown') {
+      e.preventDefault()
+      const step = e.key === 'PageUp' ? -3 : 3
+      const nextRow = Math.min(Math.max(row + step, 0), 8)
+      moveCursor(nextRow * 9 + col, i, e.shiftKey)
+      return
+    }
 
     switch (e.key) {
       case 'ArrowRight':
@@ -95,6 +156,10 @@ export default function Puzzle({ className }: { className?: string }) {
         e.preventDefault()
         onSelect(i, true)
         return
+      case 'Enter':
+        e.preventDefault()
+        applyActiveTool(targetsFrom(i))
+        return
       case 'Escape':
         e.preventDefault()
         clearSelection()
@@ -108,18 +173,19 @@ export default function Puzzle({ className }: { className?: string }) {
 
     if (target !== null) {
       e.preventDefault()
-      cellRefs.current[target]?.focus()
-      setFocusedIndex(target)
+      moveCursor(target, i, e.shiftKey)
       return
     }
 
-    if (/^[1-9]$/.test(e.key))
-      onNumber?.(
-        Number(e.key) as SudokuNumber,
-        selected.size === 0 && focusedIndex != null
-          ? new Set([focusedIndex])
-          : undefined
-      )
+    if (!/^[1-9]$/.test(e.key)) return
+
+    if (activeMode === 'paint') {
+      const swatch = PAINT_COLORS[Number(e.key) - 1]
+      if (swatch) onColor?.(swatch.value, targetsFrom(i))
+      return
+    }
+
+    onNumber?.(Number(e.key) as SudokuNumber, targetsFrom(i))
   }
 
   const cellProps = (i: number) => {
@@ -140,16 +206,12 @@ export default function Puzzle({ className }: { className?: string }) {
       onMouseLeave: () => setHoveredIndex(null),
       onFocus: () => setFocusedIndex(i),
       onBlur: () => setFocusedIndex(null),
-      className: cn(
-        'cursor-pointer outline-none',
-        'focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-inset focus-visible:z-10',
-        isSelected && 'ring-1 ring-inset ring-accent/60'
-      ),
+      className: 'cursor-pointer outline-none',
     }
   }
 
   const renderCell = (i: number) => {
-    const { cell, isSelected, isPeer, isError, isSameNumber, pulse } =
+    const { cell, isSelected, isCursor, isPeer, isError, isSameNumber, pulse } =
       cellView(i)
 
     return (
@@ -159,6 +221,7 @@ export default function Puzzle({ className }: { className?: string }) {
         color={cell.color}
         notes={cell.notes}
         isSelected={isSelected}
+        isCursor={isCursor}
         isPeer={isPeer}
         isError={isError}
         isSameNumber={isSameNumber}
@@ -168,13 +231,20 @@ export default function Puzzle({ className }: { className?: string }) {
   }
 
   return (
-    <SudokuGrid
-      className={className}
-      ariaLabel="Sudoku puzzle, 9 by 9 grid"
-      multiselectable
-      containerRef={registerInteractive}
-      cellProps={cellProps}
-      renderCell={renderCell}
-    />
+    <>
+      <p id={instructionsId} className="sr-only">
+        Arrow keys move between squares, 1 to 9 write a digit, Enter applies the
+        active tool. Press question mark for the full list of shortcuts.
+      </p>
+      <SudokuGrid
+        className={className}
+        ariaLabel="Sudoku puzzle, 9 by 9 grid"
+        ariaDescribedBy={instructionsId}
+        multiselectable
+        containerRef={registerInteractive}
+        cellProps={cellProps}
+        renderCell={renderCell}
+      />
+    </>
   )
 }

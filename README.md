@@ -16,7 +16,7 @@ Built with **React 19**, **TypeScript**, **Tailwind CSS v4**, and **Vite**.
 - **Seekable playback.** The displayed board is a pure fold of the givens plus every delta up to the current step, so the walkthrough rewinds and jumps as easily as it plays.
 - **Brute force you can watch.** Norvig's propagation rewritten as a FIFO worklist so waves animate coherently; speculative branches live in notes only, because note deltas are invertible and value writes aren't.
 - **Locked candidates as bitmasks.** Pointing and claiming collapse into one 3×3 bitmask scan per digit — same code on both axes.
-- **WAI-ARIA Grid pattern**, keyboard-complete, roving `tabIndex`, live regions.
+- **WAI-ARIA Grid pattern**, keyboard-complete — roving `tabIndex` across grid, toolbar and pad, a live region for every move, tool shortcuts, Alt-held access keys, and a `?` shortcut dialog. Audited against the APG grid, toolbar, radio and menu patterns; see [accessibility.md](docs/accessibility.md).
 
 ## Docs
 

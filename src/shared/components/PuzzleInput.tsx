@@ -10,6 +10,7 @@ type PuzzleInputProps = {
 export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
   const instructionsId = useId()
+  const pasteHintId = useId()
 
   const handleInputKeyDown = (e: React.KeyboardEvent, index: number) => {
     const moves: Partial<Record<string, number>> = {
@@ -128,17 +129,22 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
 
   return (
     <form onSubmit={handleSubmit} className={className}>
-      <p id={instructionsId} className="mb-3 text-xs text-fg-muted">
-        Paste an 81-character puzzle anywhere in the grid, or type it in:{' '}
-        <b className="text-fg">1–9</b> fills and moves on,{' '}
-        <b className="text-fg">0</b> or <b className="text-fg">Space</b> leaves a
-        square blank, <b className="text-fg">Backspace</b> clears and steps back,{' '}
-        <b className="text-fg">arrow keys</b> move anywhere.
-      </p>
+      <div id={instructionsId} className="mb-3 text-xs text-fg-muted">
+        Type your puzzle:
+        <ul className="mt-1 ml-4 list-disc">
+          <li>
+            <b className="text-fg">0</b> and <b className="text-fg">Space</b> to
+            skip
+          </li>
+          <li>
+            use <b className="text-fg">arrow keys</b> to navigate
+          </li>
+        </ul>
+      </div>
       <div
         role="grid"
         aria-label="Sudoku puzzle input"
-        aria-describedby={instructionsId}
+        aria-describedby={`${instructionsId} ${pasteHintId}`}
         aria-rowcount={9}
         aria-colcount={9}
         className="w-full aspect-square flex flex-col gap-px p-0.5 bg-blue"
@@ -185,13 +191,16 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
           </div>
         ))}
       </div>
-      <div className="mt-4 flex gap-4">
+      <div className="mt-4 flex items-center gap-4">
         <Button type="button" onClick={handleClear} className="font-semibold">
           Clear
         </Button>
         <Button type="submit" className="font-semibold">
           Load
         </Button>
+        <p id={pasteHintId} className="text-xs text-fg-muted">
+          You can paste an 81-char puzzle.
+        </p>
       </div>
     </form>
   )

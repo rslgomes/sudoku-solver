@@ -9,6 +9,7 @@ type CellContentProps = {
   color: string | null
   notes: Set<SudokuNumber>
   isSelected: boolean
+  isCursor: boolean
   isPeer: boolean
   isError: boolean
   isSameNumber: boolean
@@ -21,6 +22,7 @@ function CellContent({
   color,
   notes,
   isSelected,
+  isCursor,
   isPeer,
   isError,
   isSameNumber,
@@ -32,7 +34,10 @@ function CellContent({
     <>
       <div
         aria-hidden="true"
-        className={cn('absolute inset-0', locked ? 'bg-bg-sunken' : 'bg-bg-raised')}
+        className={cn(
+          'absolute inset-0',
+          locked ? 'bg-bg-sunken' : 'bg-bg-raised'
+        )}
         style={color ? { backgroundColor: color } : undefined}
       />
 
@@ -68,6 +73,13 @@ function CellContent({
           {value}
         </span>
       </span>
+
+      {isCursor && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none ring-2 ring-inset ring-accent"
+        />
+      )}
     </>
   )
 }

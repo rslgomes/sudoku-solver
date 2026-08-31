@@ -126,7 +126,10 @@ describe('play grid — entry and deletion', () => {
     )
 
     await user.keyboard('{Backspace}')
-    expect(cells[0]).toHaveAttribute('aria-label', expect.stringContaining('empty'))
+    expect(cells[0]).toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('empty')
+    )
   })
 })
 
@@ -140,9 +143,11 @@ describe('play grid — givens are read-only', () => {
     await user.keyboard('7')
 
     await user.click(screen.getByLabelText('Options', { selector: 'summary' }))
-    await user.click(screen.getByRole('menuitemcheckbox', { name: /Show lock tool/i }))
     await user.click(
-      screen.getByRole('button', { name: /Lock — fix given squares/i })
+      screen.getByRole('menuitemcheckbox', { name: /Show lock tool/i })
+    )
+    await user.click(
+      screen.getByRole('radio', { name: /Lock — fix given squares/i })
     )
     await user.click(cells[0])
 
@@ -163,10 +168,50 @@ describe('mode changes — live region', () => {
     expect(status).toHaveTextContent('Pen mode active')
 
     await user.click(
-      screen.getByRole('button', { name: /Pencil — mark candidates/i })
+      screen.getByRole('radio', { name: /Pencil — mark candidates/i })
     )
     expect(status).toHaveTextContent(
       'Pencil mode active — Mark candidate numbers in a square'
     )
+  })
+})
+
+describe('play grid — cursor', () => {
+  function cursorRing(cell: HTMLElement) {
+    return cell.querySelector('.ring-accent')
+  }
+
+  it('marks the clicked cell as the cursor, not only on keyboard focus', async () => {
+    const user = userEvent.setup()
+    await renderRoute('/')
+    const cells = gridCells()
+
+    await user.click(cells[10])
+
+    expect(cursorRing(cells[10])).not.toBeNull()
+    expect(cursorRing(cells[11])).toBeNull()
+  })
+
+  it('moves the cursor with the arrow keys', async () => {
+    const user = userEvent.setup()
+    await renderRoute('/')
+    const cells = gridCells()
+
+    await user.click(cells[10])
+    await user.keyboard('{ArrowRight}')
+
+    expect(cursorRing(cells[11])).not.toBeNull()
+    expect(cursorRing(cells[10])).toBeNull()
+  })
+
+  it('draws the cursor above the cell background layers', async () => {
+    const user = userEvent.setup()
+    await renderRoute('/')
+    const cells = gridCells()
+
+    await user.click(cells[10])
+
+    const layers = [...cells[10].children]
+    expect(layers.indexOf(cursorRing(cells[10])!)).toBe(layers.length - 1)
   })
 })

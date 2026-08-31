@@ -9,6 +9,7 @@ import { parseGrid } from '@shared/sudoku/codec'
 import Puzzle from '@features/play/Puzzle'
 import Toolbox from '@features/play/Toolbox'
 import Pad from '@features/play/Pad'
+import Announcer from '@features/play/widgets/Announcer'
 
 export default function HomePage() {
   const { fillGrid } = useController()
@@ -25,6 +26,7 @@ export default function HomePage() {
         }
       >
         <div>
+          <Announcer />
           <div className="mt-4 grid w-full max-w-lg mx-auto content-start gap-2 grid-cols-[1fr_auto] [grid-template-areas:'puzzle_toolbox']">
             <Puzzle className="[grid-area:puzzle]" />
             <Toolbox className="[grid-area:toolbox] ml-2" />

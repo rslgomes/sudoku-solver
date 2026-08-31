@@ -27,9 +27,15 @@ export interface Meta {
 export const MODE_LABEL: Record<MoveMode, { title: string; hint: string }> = {
   pen: { title: 'Pen', hint: 'Fill a square with a number' },
   pencil: { title: 'Pencil', hint: 'Mark candidate numbers in a square' },
-  eraser: { title: 'Eraser', hint: 'Click a square to erase it' },
-  paint: { title: 'Paint', hint: 'Color the background of selected squares' },
-  lock: { title: 'Lock', hint: 'Click a square to lock or unlock it' },
+  eraser: {
+    title: 'Eraser',
+    hint: 'Click a square, or press Enter, to erase it',
+  },
+  paint: { title: 'Paint', hint: 'Press 1–6 or pick a color, then Enter' },
+  lock: {
+    title: 'Lock',
+    hint: 'Click a square, or press Enter, to lock or unlock it',
+  },
 }
 
 export interface PlayController {
@@ -44,10 +50,11 @@ export interface PlayController {
   onModeChange: (mode: MoveMode) => void
   onSelect: (square: number, toggle: boolean) => void
   clearSelection: () => void
+  selectMany: (indices: Iterable<number>, additive?: boolean) => void
   registerInteractive: (el: HTMLElement | null) => (() => void) | undefined
   onNumber: (n: SudokuNumber, customSelection?: Set<number>) => void
-  onColor: (color: string | null) => void
-  onAction: () => void
+  onColor: (color: string | null, customSelection?: Set<number>) => void
+  onAction: (customSelection?: Set<number>) => void
   onDelete: (customSelection?: Set<number>) => void
   onUndo: () => void
   onReset: () => void
@@ -55,4 +62,5 @@ export interface PlayController {
   pulsingSquares: Map<number, PulseKind>
   clearPulsing: () => void
   timer: TimerController
+  announcement: string
 }
