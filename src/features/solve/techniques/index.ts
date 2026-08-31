@@ -1,6 +1,7 @@
 export { default as checkEmptySquares } from './checkEmptySquares'
 export { default as clearNotes } from './clearNotes'
 export { default as lockedCandidates } from './lockedCandidates'
+export { default as subsets } from './subsets'
 export { default as bruteForce } from './bruteForce'
 export { default as hiddenSingle } from './hiddenSingle'
 export { default as nakedSingle } from './nakedSingle'

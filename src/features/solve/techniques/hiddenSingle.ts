@@ -11,10 +11,12 @@ import {
 } from '@shared/sudoku'
 import type { Placement, Technique } from '../types'
 
-const UNIT_CUE = 'peerGroup'
+const CELLS_CUE = 'cells'
 const placementCue = (index: number) => `place-${index}`
 
-function findPlacements(grid: Square[], unit: Unit): Placement[] {
+type HiddenPlacement = Placement & { unit: Unit }
+
+function findUnitPlacements(grid: Square[], unit: Unit): Placement[] {
   const hiddenSingles = new Map<SudokuNumber, number>()
   const foundBefore = new Set<SudokuNumber>()
 
@@ -47,19 +49,36 @@ function findPlacements(grid: Square[], unit: Unit): Placement[] {
   return placements
 }
 
-function headline(unit: Unit, count: number): string {
-  const where = `{{${UNIT_CUE}|${unitLabel(unit)}}}`
-  return count === 1
-    ? `In ${where}, one number has a single square left to live in. So we mark it with the pen.`
-    : `In ${where}, ${count} numbers have a single square left to live in. So we mark each with the pen.`
+function findPlacements(grid: Square[]): HiddenPlacement[] {
+  const taken = new Set<number>()
+  const placements: HiddenPlacement[] = []
+
+  for (const unit of ALL_UNITS) {
+    for (const placement of findUnitPlacements(grid, unit)) {
+      if (taken.has(placement.index)) continue
+      taken.add(placement.index)
+      placements.push({ ...placement, unit })
+    }
+  }
+  return placements
 }
 
-const placementLine = ({ index, value }: Placement) =>
-  `${value} → {{${placementCue(index)}|${squareName(index)}}}, the only square that can hold it`
+function headline(count: number): string {
+  const cells = `{{${CELLS_CUE}|${count === 1 ? 'one square' : `${count} squares`}}}`
+  return count === 1
+    ? `${cells} has a single square left to hold its number in a row, column, or box. So we mark it with the pen.`
+    : `${cells} have a single square left to hold their number in a row, column, or box. So we mark each with the pen.`
+}
 
-function toScene(unit: Unit, placements: Placement[]): Scene {
+const placementLine = ({ index, value, unit }: HiddenPlacement) =>
+  `${value} → {{${placementCue(index)}|${squareName(index)}}}, the only square in ${unitLabel(unit)} that can hold it`
+
+function toScene(placements: HiddenPlacement[]): Scene {
   const steps: SceneStep[] = [
-    { beats: [highlightValues(unit.squares)], cue: UNIT_CUE },
+    {
+      beats: [highlightValues(placements.map(({ index }) => index))],
+      cue: CELLS_CUE,
+    },
     ...placements.map(
       ({ index, value }): SceneStep => ({
         beats: [highlightValues([index])],
@@ -73,7 +92,7 @@ function toScene(unit: Unit, placements: Placement[]): Scene {
   return {
     title: 'Hidden Single',
     explanation: [
-      headline(unit, placements.length),
+      headline(placements.length),
       ...placements.map(placementLine),
     ].join('\n'),
     steps,
@@ -81,11 +100,8 @@ function toScene(unit: Unit, placements: Placement[]): Scene {
 }
 
 function run(grid: Square[]): Scene | null {
-  for (const unit of ALL_UNITS) {
-    const placements = findPlacements(grid, unit)
-    if (placements.length > 0) return toScene(unit, placements)
-  }
-  return null
+  const placements = findPlacements(grid)
+  return placements.length > 0 ? toScene(placements) : null
 }
 
 const hiddenSingle: Technique = {

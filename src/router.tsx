@@ -31,6 +31,16 @@ const emptyGrid = (): Square[] =>
 // eslint-disable-next-line react-refresh/only-export-components
 function RootShell() {
   const config = useConfigContext()
+
+  return (
+    <ConfigContext.Provider value={config}>
+      <RootShellGrids />
+    </ConfigContext.Provider>
+  )
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+function RootShellGrids() {
   const playGrid = useControllerOrchestrator({ initialGrid: emptyGrid() })
   const solveGrid = useSolveGridState()
 
@@ -42,13 +52,11 @@ function RootShell() {
   }, [sharedGrid])
 
   return (
-    <ConfigContext.Provider value={config}>
-      <ControllerContext.Provider value={playGrid}>
-        <SolveGridContext.Provider value={solveGrid}>
-          <Outlet />
-        </SolveGridContext.Provider>
-      </ControllerContext.Provider>
-    </ConfigContext.Provider>
+    <ControllerContext.Provider value={playGrid}>
+      <SolveGridContext.Provider value={solveGrid}>
+        <Outlet />
+      </SolveGridContext.Provider>
+    </ControllerContext.Provider>
   )
 }
 

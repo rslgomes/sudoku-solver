@@ -1,6 +1,7 @@
 import { highlightNotes, highlightValues } from '@features/explain/lib/atoms'
 import type { CellDelta, Scene } from '@features/explain/types'
 import {
+  ALL_UNITS,
   getCandidates,
   SUDOKU_NUMBERS,
   type Square,
@@ -31,39 +32,58 @@ import type { Technique } from '../types'
  * | | | | band 2
  * |_|_|_|
  *
- * generalized line x box are called GROUPS
+ * Bands and stacks are the same line x box relationship viewed in
+ * opposite directions — inverting rows and columns turns one into the
+ * other. That inversion is captured below as a pair of Orientations.
  ***/
 
-const BANDS = 3
-const STACKS = 3
-const GROUPS = BANDS + STACKS
+const MATRIX_SIZE = 3
+const LINE_MASKS = [0b000000111, 0b000111000, 0b111000000]
+const BOX_MASKS = [0b001001001, 0b010010010, 0b100100100]
+const lineOf = (flatIndex: number) => Math.floor(flatIndex / MATRIX_SIZE)
+const boxOf = (flatIndex: number) => flatIndex % MATRIX_SIZE
 
-function buildMatrices(grid: Square[]): Uint16Array {
-  const out = new Uint16Array(SUDOKU_NUMBERS.length * GROUPS)
+type Orientation = {
+  label: 'row' | 'column'
+  baseStep: number
+  lineStep: number
+  boxStep: number
+  innerStep: number
+  lineLabel(group: number, slot: number): string
+  boxLabel(group: number, slot: number): string
+}
 
-  for (let i = 0; i < grid.length; i++) {
-    const square = grid[i]
+const ROW_ORIENTATION: Orientation = {
+  label: 'row',
+  baseStep: 27,
+  lineStep: 9,
+  boxStep: 3,
+  innerStep: 1,
+  lineLabel: (band, slot) => `row ${band * MATRIX_SIZE + lineOf(slot) + 1}`,
+  boxLabel: (band, slot) => `box ${band * MATRIX_SIZE + boxOf(slot) + 1}`,
+}
 
-    const row = Math.floor(i / 9)
-    const col = i % 9
+const COLUMN_ORIENTATION: Orientation = {
+  label: 'column',
+  baseStep: 3,
+  lineStep: 1,
+  boxStep: 27,
+  innerStep: 9,
+  lineLabel: (stack, slot) => `column ${stack * MATRIX_SIZE + lineOf(slot) + 1}`,
+  boxLabel: (stack, slot) => `box ${boxOf(slot) * MATRIX_SIZE + stack + 1}`,
+}
 
-    const band = Math.floor(row / 3)
-    const stack = Math.floor(col / 3)
+const ORIENTATIONS = [ROW_ORIENTATION, COLUMN_ORIENTATION]
+const LINE_GROUPS = ORIENTATIONS.length * MATRIX_SIZE
 
-    const bandFlatIndex = (row % 3) * 3 + stack
-    const rowBit = 1 << bandFlatIndex
-
-    const stackFlatIndex = (col % 3) * 3 + band
-    const colBit = 1 << stackFlatIndex
-
-    for (const n of getCandidates(square)) {
-      const currentBandMatrixIdx = GROUPS * (n - 1) + band
-      const currentStackMatrixIdx = GROUPS * (n - 1) + (stack + BANDS)
-      out[currentBandMatrixIdx] |= rowBit
-      out[currentStackMatrixIdx] |= colBit
-    }
+function resolveGroup(group: number): {
+  orientation: Orientation
+  localGroup: number
+} {
+  return {
+    orientation: ORIENTATIONS[Math.floor(group / MATRIX_SIZE)],
+    localGroup: group % MATRIX_SIZE,
   }
-  return out
 }
 
 /**
@@ -76,11 +96,30 @@ function buildMatrices(grid: Square[]): Uint16Array {
  *
  * is equivalent to 110 011 101 -> 110011101 -> 0000000101110011 (bit Reversed)
  * **/
-const MATRIX_SIZE = 3
-const LINE_MASKS = [0b000000111, 0b000111000, 0b111000000]
-const BOX_MASKS = [0b001001001, 0b010010010, 0b100100100]
-const lineOf = (flatIndex: number) => Math.floor(flatIndex / MATRIX_SIZE)
-const boxOf = (flatIndex: number) => flatIndex % MATRIX_SIZE
+function buildMatrices(grid: Square[]): Uint16Array {
+  const out = new Uint16Array(SUDOKU_NUMBERS.length * LINE_GROUPS)
+  const boxes = ALL_UNITS.filter((unit) => unit.kind === 'box')
+
+  boxes.forEach((box, boxIndex) => {
+    const band = Math.floor(boxIndex / MATRIX_SIZE)
+    const stack = boxIndex % MATRIX_SIZE
+
+    box.squares.forEach((squareIndex, slot) => {
+      const rowInBox = Math.floor(slot / MATRIX_SIZE)
+      const colInBox = slot % MATRIX_SIZE
+
+      const rowBit = 1 << (rowInBox * MATRIX_SIZE + stack)
+      const colBit = 1 << (colInBox * MATRIX_SIZE + band)
+
+      for (const n of getCandidates(grid[squareIndex])) {
+        out[LINE_GROUPS * (n - 1) + band] |= rowBit
+        out[LINE_GROUPS * (n - 1) + MATRIX_SIZE + stack] |= colBit
+      }
+    })
+  })
+
+  return out
+}
 
 const isSingle = (masked: number) =>
   masked !== 0 && (masked & (masked - 1)) === 0
@@ -96,8 +135,8 @@ type Lock = {
 
 function findLock(matrices: Uint16Array): Lock | null {
   for (const value of SUDOKU_NUMBERS) {
-    for (let group = 0; group < GROUPS; group++) {
-      const matrix = matrices[(value - 1) * GROUPS + group]
+    for (let group = 0; group < LINE_GROUPS; group++) {
+      const matrix = matrices[(value - 1) * LINE_GROUPS + group]
 
       for (let k = 0; k < MATRIX_SIZE; k++) {
         const filledLines = matrix & LINE_MASKS[k]
@@ -134,28 +173,12 @@ function findLock(matrices: Uint16Array): Lock | null {
   return null
 }
 
-const BAND_META = {
-  baseStep: 27,
-  lineStep: 9,
-  boxStep: 3,
-  innerStep: 1,
-}
-const STACK_META = {
-  baseStep: 3,
-  lineStep: 1,
-  boxStep: 27,
-  innerStep: 9,
-}
-
 function slotSquares(group: number, slot: number): number[] {
-  const isBand = group < BANDS
-  const normalized = isBand ? group : group - BANDS
-  const { baseStep, lineStep, boxStep, innerStep } = isBand
-    ? BAND_META
-    : STACK_META
+  const { orientation, localGroup } = resolveGroup(group)
+  const { baseStep, lineStep, boxStep, innerStep } = orientation
 
   const start =
-    normalized * baseStep + boxOf(slot) * boxStep + lineOf(slot) * lineStep
+    localGroup * baseStep + boxOf(slot) * boxStep + lineOf(slot) * lineStep
   return [start, start + innerStep, start + 2 * innerStep]
 }
 
@@ -166,16 +189,6 @@ function maskSquares(group: number, mask: number): number[] {
   }
   return squares
 }
-
-const lineLabel = (group: number, slot: number) =>
-  group < BANDS
-    ? `row ${group * MATRIX_SIZE + lineOf(slot) + 1}`
-    : `column ${(group - BANDS) * MATRIX_SIZE + lineOf(slot) + 1}`
-
-const boxLabel = (group: number, slot: number) =>
-  group < BANDS
-    ? `box ${group * MATRIX_SIZE + boxOf(slot) + 1}`
-    : `box ${boxOf(slot) * MATRIX_SIZE + (group - BANDS) + 1}`
 
 const LOCKED_CUE = 'locked'
 const CLEARED_CUE = 'cleared'
@@ -193,8 +206,9 @@ function toScene(grid: Square[], lock: Lock): Scene | null {
     delta[index] = { removeNotes: [lock.value] }
   }
 
-  const line = lineLabel(lock.group, lock.lineBoxIntersection)
-  const box = boxLabel(lock.group, lock.lineBoxIntersection)
+  const { orientation, localGroup } = resolveGroup(lock.group)
+  const line = orientation.lineLabel(localGroup, lock.lineBoxIntersection)
+  const box = orientation.boxLabel(localGroup, lock.lineBoxIntersection)
   const holds = `{{${LOCKED_CUE}|where they overlap}}`
   const swept =
     lock.kind === 'pointing'

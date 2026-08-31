@@ -7,6 +7,7 @@ import {
   bruteForce,
   nakedSingle,
   lockedCandidates,
+  subsets,
 } from './techniques'
 
 const TECHNIQUES = [
@@ -15,6 +16,7 @@ const TECHNIQUES = [
   nakedSingle,
   hiddenSingle,
   lockedCandidates,
+  subsets,
   bruteForce,
 ]
 
