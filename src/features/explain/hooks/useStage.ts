@@ -167,6 +167,15 @@ export default function useStage() {
 
   const index = (timeline.sceneStarts[scene] ?? 0) + step
 
+  const outline = useMemo(
+    () =>
+      solution.scenes.map((s) => ({
+        title: s.title,
+        stepCount: s.steps.length,
+      })),
+    [solution]
+  )
+
   const jumpTo = useCallback(
     (target: number) => {
       const { sceneStarts, total } = timeline
@@ -182,6 +191,11 @@ export default function useStage() {
       roll('snap')
     },
     [timeline, roll]
+  )
+
+  const jumpToScene = useCallback(
+    (target: number) => jumpTo(timeline.sceneStarts[target] ?? 0),
+    [jumpTo, timeline]
   )
 
   const jumpToCue = useCallback(
@@ -256,6 +270,7 @@ export default function useStage() {
     currentStep,
     evidence,
     goToCue: paused(jumpToCue),
+    outline,
     position: {
       scene,
       step,
@@ -266,6 +281,7 @@ export default function useStage() {
     },
     navigation: {
       seek: paused(jumpTo),
+      goToScene: paused(jumpToScene),
       previousScene: paused(sceneBackward),
       nextScene: paused(sceneForward),
       previousStep: paused(stepBackward),

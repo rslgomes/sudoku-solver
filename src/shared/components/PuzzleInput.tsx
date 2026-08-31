@@ -147,7 +147,7 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
         aria-describedby={`${instructionsId} ${pasteHintId}`}
         aria-rowcount={9}
         aria-colcount={9}
-        className="w-full aspect-square flex flex-col gap-px p-0.5 bg-blue"
+        className="w-full aspect-square flex flex-col gap-px p-0.5 bg-grid-line"
         onPaste={handlePaste}
       >
         {Array.from({ length: 9 }).map((_, row) => (

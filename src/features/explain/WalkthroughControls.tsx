@@ -1,10 +1,13 @@
+import { useRef } from 'react'
 import Button from '@shared/ui/Button'
 import ToggleButton from '@shared/ui/ToggleButton'
 import { useStageContext } from './contexts/stageContext'
 import { SPEEDS } from './hooks/useStage'
+import SceneList from './SceneList'
 
 export default function WalkthroughControls() {
   const { navigation, position, playback, currentScene } = useStageContext()
+  const sceneListRef = useRef<HTMLDialogElement>(null)
   const { previousScene, nextScene, previousStep, nextStep, seek } = navigation
   const { scene, step, index, total, sceneCount, stepCount } = position
   const {
@@ -89,10 +92,20 @@ export default function WalkthroughControls() {
         </ToggleButton>
       </div>
 
-      <span className="text-xs text-fg-muted">
-        Step {index + 1}/{total} · Scene {scene + 1}/{sceneCount} · Step{' '}
-        {step + 1}/{stepCount} in scene
-      </span>
+      <div className="flex items-center gap-2 text-xs text-fg-muted">
+        <span>
+          Step {index + 1}/{total} · Step {step + 1}/{stepCount} in scene
+        </span>
+        <Button
+          size="sm"
+          onClick={() => sceneListRef.current?.showModal()}
+          aria-haspopup="dialog"
+        >
+          Scene {scene + 1}/{sceneCount}
+        </Button>
+      </div>
+
+      <SceneList dialogRef={sceneListRef} />
     </div>
   )
 }

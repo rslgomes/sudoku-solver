@@ -16,11 +16,11 @@ export default function HeaderMainLayout({
 
   return (
     <header className="shadow-raise">
-      <div className="bg-accent flex justify-start items-center p-1">
+      <div className="bg-titlebar flex justify-start items-center p-1">
         <a href="/" aria-label="Sudoku Solver - home">
-          <Logo aria-hidden className="size-8 text-accent-dim" />
+          <Logo aria-hidden className="size-8 text-titlebar-emblem" />
         </a>
-        <h1 className="text-fg font-style font-medium text-3xl ml-4">
+        <h1 className="text-fg-on-titlebar font-style font-medium text-3xl ml-4">
           Sudoku Solver
         </h1>
         <div className="ml-auto flex gap-2" role="toolbar" aria-label="actions">
