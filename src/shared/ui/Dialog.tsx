@@ -38,11 +38,11 @@ export default function Dialog({
     >
       <header
         className={cn(
-          'flex items-center justify-between bg-blue',
+          'flex items-center justify-between bg-titlebar-alt',
           headerClassName
         )}
       >
-        <h2 id={titleId} className="ml-2 font-bold text-lg">
+        <h2 id={titleId} className="ml-2 font-bold text-lg text-fg-on-titlebar">
           {title}
         </h2>
         <Button

@@ -25,3 +25,9 @@ export type SceneStep = {
 }
 
 export type Beat = (cells: Map<number, HTMLElement>) => Animation[]
+
+export type StepEvidence = {
+  placed: Set<number>
+  struck: Map<number, SudokuNumber[]>
+  added: Map<number, SudokuNumber[]>
+}
