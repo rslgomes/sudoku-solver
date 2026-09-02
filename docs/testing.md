@@ -14,6 +14,7 @@ Two layers, because they catch disjoint classes of bug.
 | ----- | ------ |
 | [`puzzleGrid.behavior.test.tsx`](../src/features/play/puzzleGrid.behavior.test.tsx) | Roving `tabIndex` (exactly one focusable cell at any time), arrow/Home/End navigation, `aria-selected`, digit entry and deletion, `aria-readonly` on givens, the `role="status"` mode region |
 | [`playControls.behavior.test.tsx`](../src/features/play/playControls.behavior.test.tsx) | Tool shortcuts and their suppression inside text fields, Ctrl+Z / Alt+R, `Enter` tool parity, paint digits, selection keys, one tab stop per composite, the assist toggles, settings surviving a remount, Options-menu keyboard navigation, live-region announcements, the shortcuts dialog |
+| [`walkthrough.behavior.test.tsx`](../src/features/explain/walkthrough.behavior.test.tsx) | Step/scene keyboard navigation (arrows, shift+arrows), the Solve route's `role="status"` region announcing scene and step entry |
 
 ## Known environment constraints
 

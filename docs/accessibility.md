@@ -5,7 +5,7 @@ Implements the [WAI-ARIA Grid pattern](https://www.w3.org/WAI/ARIA/apg/patterns/
 - `role="grid/row/gridcell"`, `aria-multiselectable`, `aria-selected`, `aria-readonly` on givens
 - Per-cell `aria-label` describes position + content (`"Row 3, column 7, given 5"`)
 - Roving `tabIndex` (one focusable cell at a time)
-- One `role="status"` live region ([`Announcer`](../src/features/play/widgets/Announcer.tsx)) reports mode changes, placements, rejected moves, erasures, undo and reset
+- One `role="status"` live region ([`Announcer`](../src/features/play/widgets/Announcer.tsx)) reports mode changes, placements, rejected moves, erasures, undo and reset. The Solve route has its own ([`StageAnnouncer`](../src/features/explain/StageAnnouncer.tsx)) reporting scene/step entry and playback state; both share [`useAnnouncer`](../src/shared/hooks/useAnnouncer.ts)
 - Toolbox is a [`toolbar`](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/) wrapping a mode [`radiogroup`](https://www.w3.org/WAI/ARIA/apg/patterns/radio/); the Pad is a `toolbar`. Both use roving `tabIndex` ([`useRovingTabIndex`](../src/shared/hooks/useRovingTabIndex.ts)), so each composite is one tab stop
 - Options menu follows the [Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/) — `role="menu"` panel, `menuitemcheckbox` items, `aria-haspopup`/`aria-expanded` on the trigger
 - Puzzle-input form mirrors the grid roles with native `<input>` semantics, per-cell `aria-label`, `aria-row/colindex`, and instructions bound via `aria-describedby`
@@ -50,6 +50,20 @@ and paint would be mouse-only.
 Bare letters are suppressed while a text field has focus or a dialog is open
 ([`useShortcuts`](../src/shared/hooks/useShortcuts.ts)). Each control carries
 `aria-keyshortcuts` and a matching `title`.
+
+### Walkthrough (Solve route)
+
+| Key            | Action                     |
+| -------------- | -------------------------- |
+| ←  / →         | Previous / next step       |
+| Shift+← / Shift+→ | Previous / next scene   |
+| Space          | Play / pause                |
+| Home / End     | First / last step overall  |
+
+Active while [`WalkthroughControls`](../src/features/explain/WalkthroughControls.tsx)
+is mounted. Any of these — or the seek slider, or a cue click — pauses
+autoplay first, so the walkthrough never advances out from under a step the
+user just navigated to.
 
 ### Menus
 

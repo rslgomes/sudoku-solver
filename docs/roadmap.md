@@ -1,6 +1,6 @@
 # Roadmap
 
-**Play** — logo redesign (retro / monospace pixel feel); ongoing QoL.
+**Play** — logo redesigned (tilted grid + pencil mark, tokenized colors); ongoing QoL.
 
 ## Accessibility (next focus)
 
@@ -30,7 +30,7 @@ Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the
 - [x] Per-step narration (`SceneStep.note`) + deferred deltas so eliminations animate before they land
 - [x] Unsolvable puzzles reported with a reason instead of a missing scene
 - [x] Naked single · hidden single · locked candidates (pointing + claiming)
-- [ ] Walkthrough controls — autoplay with play / pause / speed
+- [x] Walkthrough controls — autoplay with play / pause / speed, seek slider, scene list, reduced-motion and announcer support
 - [ ] Cross-route puzzle transport — carry a puzzle between Play and Solve
 - [ ] Solve off the main thread — the pathological anti-brute-force puzzle freezes the UI for minutes
 
