@@ -7,8 +7,8 @@ const AXIS = Array.from({ length: 9 }, (_, i) => i)
 
 function boxBorders(row: number, col: number): string {
   return cn(
-    (col === 2 || col === 5) && 'border-r-2 border-r-fg/40',
-    (row === 2 || row === 5) && 'border-b-2 border-b-fg/40'
+    (col === 2 || col === 5) && 'border-r-2 border-r-fg/45',
+    (row === 2 || row === 5) && 'border-b-2 border-b-fg/45'
   )
 }
 
@@ -41,7 +41,7 @@ export default function SudokuGrid({
       aria-describedby={ariaDescribedBy}
       aria-multiselectable={multiselectable || undefined}
       className={cn(
-        'grid grid-cols-9 w-full aspect-square border-2 border-fg/50 overflow-hidden',
+        'grid grid-cols-9 w-full aspect-square border-2 border-fg/55 overflow-hidden',
         className
       )}
     >
@@ -55,7 +55,7 @@ export default function SudokuGrid({
                 key={i}
                 role="gridcell"
                 className={cn(
-                  'relative aspect-square border border-fg/15',
+                  'relative aspect-square border border-fg/25',
                   boxBorders(row, col),
                   cellClassName
                 )}

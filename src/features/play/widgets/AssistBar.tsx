@@ -15,7 +15,7 @@ export default function AssistBar({ className }: { className?: string }) {
   const assists = [
     {
       label: 'Peers',
-      title: 'Highlight the row, column and box of the hovered square',
+      title: 'Highlight the row, column and box of the active square',
       checked: highlightPeersOnHover,
       onChange: setHighlightPeersOnHover,
     },

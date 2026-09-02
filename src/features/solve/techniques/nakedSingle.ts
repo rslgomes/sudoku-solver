@@ -11,7 +11,7 @@ import {
 import type { Placement, Technique } from '../types'
 
 const CELLS_CUE = 'cells'
-const placementCue = (index: number) => `place-${index}`
+const PLACE_CUE = 'place'
 
 const soleCandidate = (
   grid: Square[],
@@ -49,28 +49,32 @@ function headline(count: number): string {
 }
 
 const placementLine = ({ index, value }: Placement) =>
-  `{{${placementCue(index)}|${squareName(index)}}} → ${value}, its last note standing`
+  `{{${PLACE_CUE}|${squareName(index)}}} → ${value}, its last note standing`
 
 function toScene(placements: Placement[]): Scene {
   const notes: Record<number, SudokuNumber[]> = {}
-  for (const { index, value } of placements) notes[index] = [value]
+  const delta: Record<number, { setValue: SudokuNumber }> = {}
+  for (const { index, value } of placements) {
+    notes[index] = [value]
+    delta[index] = { setValue: value }
+  }
+
+  const indices = placements.map(({ index }) => index)
+  const note = placements
+    .map(({ index, value }) => `${squareName(index)} = ${value}`)
+    .join(', ')
 
   const steps: SceneStep[] = [
     {
-      beats: [
-        highlightValues(placements.map(({ index }) => index)),
-        highlightNotes(notes),
-      ],
+      beats: [highlightValues(indices), highlightNotes(notes)],
       cue: CELLS_CUE,
     },
-    ...placements.map(
-      ({ index, value }): SceneStep => ({
-        beats: [highlightValues([index])],
-        cue: placementCue(index),
-        note: `${squareName(index)} = ${value}`,
-        delta: { [index]: { setValue: value } },
-      })
-    ),
+    {
+      beats: [highlightValues(indices)],
+      cue: PLACE_CUE,
+      note,
+      delta,
+    },
   ]
 
   return {
