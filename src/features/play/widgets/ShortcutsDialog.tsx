@@ -61,7 +61,6 @@ export default function ShortcutsDialog({
       onClose={close}
       title="Keyboard shortcuts"
       className="w-full max-w-md"
-      headerClassName="pl-3"
     >
       <div className="flex flex-col gap-4 p-4">
         {GROUPS.map(({ title, keys }) => (

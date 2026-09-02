@@ -27,7 +27,6 @@ export default function SceneList({
       onClose={close}
       title="Scenes"
       className="w-full max-w-sm"
-      headerClassName="pl-3"
     >
       <div className="m-2 bg-bg-sunken shadow-press">
         <ol className="max-h-[60vh] overflow-y-auto p-1 text-sm">

@@ -59,7 +59,6 @@ export default function PromptDialog({
         title={title}
         aria-describedby={promptId}
         className={cn('w-full max-w-sm', dialogClassName)}
-        headerClassName="pl-3"
       >
         <div className="flex flex-col gap-4 p-4">
           <p id={promptId} className="text-fg text-sm">

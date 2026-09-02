@@ -17,15 +17,22 @@
   --color-accent-light: oklch(82.06% 0.1199 325);
   --color-accent-dim: oklch(41.94% 0.1605 325);
 
+  --color-alt: oklch(54.94% 0.1806 285);
+  --color-alt-light: oklch(82.06% 0.1199 285);
+  --color-alt-dim: oklch(41.94% 0.1605 285);
+
   --color-titlebar: oklch(74% 0.16 325);
-  --color-titlebar-alt: oklch(70% 0.15 265);
+  --color-titlebar-alt: oklch(74% 0.16 285);
   --color-titlebar-emblem: oklch(38% 0.19 325);
+  --color-titlebar-alt-emblem: oklch(38% 0.19 285);
   --color-fg-on-titlebar: oklch(16% 0.035 325);
+  --color-fg-on-titlebar-alt: oklch(16% 0.035 285);
 
   --color-fg: oklch(22.72% 0.008 84.59);
   --color-fg-muted: oklch(45.27% 0.01 67.56);
   --color-fg-faint: oklch(61.74% 0.009 56.22);
   --color-fg-on-accent: oklch(98% 0.01 325);
+  --color-fg-on-alt: oklch(98% 0.01 285);
 
   /* --color-border-out: lch(95.6 2.8 87.2);
   --color-border-in: lch(64.2 4.3 82.9);
@@ -39,7 +46,7 @@
   --color-blue: oklch(50% 0.14 265);
   --color-yellow: oklch(52% 0.14 85);
 
-  --color-grid-line: oklch(41.36% 0.13 265);
+  --color-grid-line: oklch(41.36% 0.13 285);
 
   /* 7-segment LED timer display */
   --color-led-on: oklch(64.5% 0.23 25);
@@ -51,6 +58,8 @@
   --shadow-press:
     inset 2px 2px 0 var(--color-bevel-dark),
     inset -1px -1px 0 var(--color-bevel-light);
+  --shadow-bar:
+    0 2px 0 var(--color-bevel-dark), 0 -1px 0 var(--color-bevel-light);
   --shadow-well:
     inset 1px 1px 3px rgb(0 0 0 / 0.25),
     inset -1px -1px 1px rgb(255 255 255 / 0.4);
@@ -94,10 +103,15 @@
   --color-accent-light: oklch(88% 0.0798 325);
   --color-accent-dim: oklch(35.88% 0.1682 325);
 
+  --color-alt: oklch(73.95% 0.1799 285);
+  --color-alt-light: oklch(88% 0.0798 285);
+  --color-alt-dim: oklch(35.88% 0.1682 285);
+
   --color-fg: oklch(91.87% 0.017 91.56);
   --color-fg-muted: oklch(65.75% 0.026 79.67);
   --color-fg-faint: oklch(46.55% 0.016 67.41);
   --color-fg-on-accent: oklch(16% 0.035 325);
+  --color-fg-on-alt: oklch(16% 0.035 285);
 
   /* --color-border-out: lch(23.3 10.6 102.4);
     --color-border-in: lch(3.6 1.4 95.8);
@@ -111,7 +125,7 @@
   --color-blue: oklch(68% 0.125 265);
   --color-yellow: oklch(68% 0.15 90);
 
-  --color-grid-line: oklch(55% 0.115 265);
+  --color-grid-line: oklch(55% 0.115 285);
 
   --shadow-well:
     inset 1px 1px 3px rgb(0 0 0 / 0.5),

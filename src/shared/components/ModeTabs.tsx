@@ -7,7 +7,7 @@ const base = cn(
   'transition-[box-shadow,background-color] duration-75'
 )
 const inactiveClass = 'bg-bg-raised text-fg-muted shadow-raise'
-const activeClass = 'bg-bg-sunken text-accent shadow-press'
+const activeClass = 'bg-bg-sunken text-alt shadow-press'
 
 const tabProps = {
   activeOptions: { exact: true, includeSearch: false },

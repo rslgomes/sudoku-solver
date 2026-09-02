@@ -15,12 +15,12 @@ export default function HeaderMainLayout({
   const isDark = theme === 'dark'
 
   return (
-    <header className="shadow-raise">
+    <header className="shadow-bar">
       <div className="bg-titlebar flex justify-start items-center p-1">
         <a href="/" aria-label="Sudoku Solver - home">
-          <Logo aria-hidden className="size-8 text-titlebar-emblem" />
+          <Logo aria-hidden className="size-10" />
         </a>
-        <h1 className="text-fg-on-titlebar font-style font-medium text-3xl ml-4">
+        <h1 className="text-fg-on-titlebar font-style font-medium text-3xl ml-2">
           Sudoku Solver
         </h1>
         <div className="ml-auto flex gap-2" role="toolbar" aria-label="actions">
