@@ -92,6 +92,57 @@
   text-underline-offset: 2px;
 }
 
+.scrubber {
+  appearance: none;
+  background: transparent;
+  height: 1rem;
+  cursor: default;
+}
+
+.scrubber::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  background: var(--color-bg-sunken);
+  box-shadow: var(--shadow-press);
+}
+
+.scrubber::-moz-range-track {
+  height: 0.5rem;
+  background: var(--color-bg-sunken);
+  box-shadow: var(--shadow-press);
+}
+
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 0.6rem;
+  height: 1rem;
+  margin-top: -0.25rem;
+  background: var(--color-bg-raised);
+  box-shadow: var(--shadow-raise);
+}
+
+.scrubber::-moz-range-thumb {
+  border: 0;
+  border-radius: 0;
+  width: 0.6rem;
+  height: 1rem;
+  background: var(--color-bg-raised);
+  box-shadow: var(--shadow-raise);
+}
+
+.scrubber:focus-visible {
+  outline: none;
+}
+
+.scrubber:focus-visible::-webkit-slider-thumb {
+  background: var(--color-accent);
+  box-shadow: var(--shadow-raise-accent);
+}
+
+.scrubber:focus-visible::-moz-range-thumb {
+  background: var(--color-accent);
+  box-shadow: var(--shadow-raise-accent);
+}
+
 :root[data-theme='dark'] {
   --color-bg-page: oklch(21.34% 0.006 91.6);
   --color-bg-base: oklch(24.3% 0.015 96.6);

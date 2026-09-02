@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Scene, SceneStep, StepEvidence } from '../types'
 import { applySteps } from '@features/solve/solve'
 import useReducedMotion from '@shared/hooks/useReducedMotion'
+import useAnnouncer from '@shared/hooks/useAnnouncer'
 
 const EMPTY_SCENE: Scene = { title: '', explanation: '', steps: [] }
 const EMPTY_STEP: SceneStep = { beats: [] }
@@ -18,6 +19,7 @@ export default function useStage() {
   const { grid, solution } = useSolveGrid()
   const key = useMemo(() => serializeGrid(grid, 'initial'), [grid])
   const reducedMotion = useReducedMotion()
+  const { message: announcement, announce } = useAnnouncer()
 
   const [scene, setScene] = useState(0)
   const [step, setStep] = useState(0)
@@ -233,10 +235,12 @@ export default function useStage() {
     if (!playing || !settled) return
     if (atLastStep) {
       setPlaying(false)
+      announce('Walkthrough complete')
       return
     }
     if (atSceneEnd && pauseAtSceneEnd && !crossSceneEnd.current) {
       setPlaying(false)
+      announce('Paused at the end of the scene')
       return
     }
     const timer = setTimeout(() => {
@@ -252,6 +256,37 @@ export default function useStage() {
     pauseAtSceneEnd,
     dwell,
     stepForward,
+    announce,
+  ])
+
+  const announcedScene = useRef(-1)
+
+  useEffect(() => {
+    if (timeline.total === 0) return
+
+    if (announcedScene.current !== scene) {
+      announcedScene.current = scene
+      announce(
+        `${currentScene.title}. Scene ${scene + 1} of ${solution.scenes.length}, ${currentScene.steps.length} steps`
+      )
+      return
+    }
+
+    if (playing) return
+    announce(
+      `Step ${step + 1} of ${currentScene.steps.length}${
+        currentStep.note ? `. ${currentStep.note}` : ''
+      }`
+    )
+  }, [
+    scene,
+    step,
+    playing,
+    timeline,
+    currentScene,
+    currentStep,
+    solution,
+    announce,
   ])
 
   const paused = useCallback(
@@ -271,6 +306,7 @@ export default function useStage() {
     evidence,
     goToCue: paused(jumpToCue),
     outline,
+    announcement,
     position: {
       scene,
       step,

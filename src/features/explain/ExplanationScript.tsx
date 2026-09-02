@@ -30,7 +30,7 @@ export default function ExplanationScript() {
     <div
       role="article"
       aria-label="Explanation"
-      className="mt-2 flex min-h-0 flex-1 flex-col rounded bg-bg-sunken p-3 font-main text-sm leading-relaxed text-fg shadow-press"
+      className="flex min-h-0 flex-1 flex-col rounded bg-bg-sunken p-3 font-main text-sm leading-relaxed text-fg shadow-press"
     >
       <h2 className="mb-1 shrink-0 font-semibold">{currentScene.title}</h2>
       {currentStep.note && (

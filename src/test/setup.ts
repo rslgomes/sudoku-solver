@@ -22,6 +22,16 @@ if (!window.matchMedia) {
     }) as MediaQueryList
 }
 
+if (!Element.prototype.animate) {
+  Element.prototype.animate = () =>
+    ({
+      finished: Promise.resolve(),
+      playbackRate: 1,
+      cancel: () => {},
+      updatePlaybackRate: () => {},
+    }) as unknown as Animation
+}
+
 const dialogPrototype = window.HTMLDialogElement?.prototype
 if (dialogPrototype && !dialogPrototype.showModal) {
   dialogPrototype.showModal = function showModal() {
