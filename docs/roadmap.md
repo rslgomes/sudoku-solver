@@ -1,8 +1,8 @@
 # Roadmap
 
-**Play** — logo redesign (retro / monospace pixel feel); ongoing QoL.
+**Play** — logo redesigned (tilted grid + pencil mark, tokenized colors); ongoing QoL.
 
-## Accessibility (next focus)
+## Accessibility
 
 Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the-apg).
 
@@ -18,6 +18,10 @@ Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the
 - [x] Announcements — placements, rejected moves, erasures, undo, reset and mode changes share one `role="status"` region
 - [x] `?` shortcut dialog, also in the Options menu, plus `aria-describedby` on the grid
 
+---
+
+_After portfolio is done — other projects come first, I'll return to finish this list afterward._
+
 ## Solve (current focus)
 
 - [x] Grid state lifted to the router — survives route changes
@@ -30,9 +34,17 @@ Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the
 - [x] Per-step narration (`SceneStep.note`) + deferred deltas so eliminations animate before they land
 - [x] Unsolvable puzzles reported with a reason instead of a missing scene
 - [x] Naked single · hidden single · locked candidates (pointing + claiming)
-- [ ] Walkthrough controls — autoplay with play / pause / speed
-- [ ] Cross-route puzzle transport — carry a puzzle between Play and Solve
+- [x] Walkthrough controls — autoplay with play / pause / speed, seek slider, scene list, reduced-motion and announcer support
+- [x] Cross-route puzzle transport — Import button on Solve, next to New, loads the initial puzzle from Play (`ImportFromPlayButton`)
 - [ ] Solve off the main thread — the pathological anti-brute-force puzzle freezes the UI for minutes
+
+---
+
+_After portfolio is done — other projects come first, I'll return to finish this list afterward._
+
+- [ ] Import current/in-progress state from Play — the "Current state" option is disabled in the Import dialog until mid-solve validation exists
+- [ ] Unique-solution check — extend brute-force `search()` to keep going past the first solution and stop at a second, so a puzzle can be confirmed to have exactly one solution
+- [ ] Mid-solve error detection — using Play's move history and the unique-solution check above, find the first user pen move that doesn't match the true solution and open the walkthrough with a single scene backtracking to it (diff the board against the solution rather than tracing propagation)
 
 ## Testing
 
@@ -43,16 +55,20 @@ Detail and APG citations in [accessibility.md](accessibility.md#gaps-against-the
 - [ ] WAAPI/SVG stubs for the animation layer — needed to test the deferred delta in `play` mode
 - [ ] Technique evaluation harness — deferred, see [testing.md](testing.md#technique-evaluation--design-note-not-planned)
 
+---
+
+_After portfolio is done — other projects come first, I'll return to finish this list afterward._
+
 ## Technique backlog
 
 Roughly by implementation cost. Everything through the cross-unit tier covers most published "hard" puzzles; the chain tiers are for the walkthrough's sake, not for coverage.
 
-**Subsets** — naked pair / triple / quad · hidden pair / triple / quad. One generalized routine each over combinations.
-
 **Cross-unit** — X-Wing · skyscraper · 2-string kite · swordfish · jellyfish (one generalized fish routine at sizes 2–4) · XY-wing · XYZ-wing · W-wing.
+
+---
+
+_After portfolio is done — other projects come first, I'll return to finish this list afterward._
 
 **Chains & colouring** — simple colouring · remote pairs · finned / sashimi X-Wing · X-chain · XY-chain. These need a strong/weak link graph, and the narration has to say which link is which.
 
 **Advanced** — BUG+1 · unique rectangle types 1–4 · ALS-XZ · AIC / forcing chains · death blossom.
-
-Worth building first: a shared `eliminationScene()` helper. Every technique below the chain tier is the same two-step shape — highlight the base cells, then strike the notes — so writing it once makes each new technique roughly thirty lines.

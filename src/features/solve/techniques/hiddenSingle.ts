@@ -12,7 +12,7 @@ import {
 import type { Placement, Technique } from '../types'
 
 const CELLS_CUE = 'cells'
-const placementCue = (index: number) => `place-${index}`
+const PLACE_CUE = 'place'
 
 type HiddenPlacement = Placement & { unit: Unit }
 
@@ -71,22 +71,28 @@ function headline(count: number): string {
 }
 
 const placementLine = ({ index, value, unit }: HiddenPlacement) =>
-  `${value} → {{${placementCue(index)}|${squareName(index)}}}, the only square in ${unitLabel(unit)} that can hold it`
+  `${value} → {{${PLACE_CUE}|${squareName(index)}}}, the only square in ${unitLabel(unit)} that can hold it`
 
 function toScene(placements: HiddenPlacement[]): Scene {
+  const delta: Record<number, { setValue: SudokuNumber }> = {}
+  for (const { index, value } of placements) delta[index] = { setValue: value }
+
+  const indices = placements.map(({ index }) => index)
+  const note = placements
+    .map(({ index, value }) => `${squareName(index)} = ${value}`)
+    .join(', ')
+
   const steps: SceneStep[] = [
     {
-      beats: [highlightValues(placements.map(({ index }) => index))],
+      beats: [highlightValues(indices)],
       cue: CELLS_CUE,
     },
-    ...placements.map(
-      ({ index, value }): SceneStep => ({
-        beats: [highlightValues([index])],
-        cue: placementCue(index),
-        note: `${squareName(index)} = ${value}`,
-        delta: { [index]: { setValue: value } },
-      })
-    ),
+    {
+      beats: [highlightValues(indices)],
+      cue: PLACE_CUE,
+      note,
+      delta,
+    },
   ]
 
   return {

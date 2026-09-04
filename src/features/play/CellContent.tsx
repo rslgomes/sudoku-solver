@@ -32,14 +32,22 @@ function CellContent({
 
   return (
     <>
-      <div
-        aria-hidden="true"
-        className={cn(
-          'absolute inset-0',
-          locked ? 'bg-bg-sunken' : 'bg-bg-raised'
-        )}
-        style={color ? { backgroundColor: color } : undefined}
-      />
+      <div aria-hidden="true" className="absolute inset-0 bg-bg-raised" />
+
+      {locked && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none bg-bg-sunken/50"
+        />
+      )}
+
+      {color && (
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundColor: color, opacity: 0.35 }}
+        />
+      )}
 
       <div
         aria-hidden="true"
@@ -64,9 +72,9 @@ function CellContent({
           className={cn(
             'flex items-center justify-center text-xl leading-none select-none',
             value && (locked ? 'font-bold text-fg-muted' : 'text-fg'),
-            hasRound && 'size-8 rounded-full text-white',
-            isSameNumber && 'bg-green',
-            isError && 'bg-red',
+            hasRound && 'size-8 rounded-full',
+            isSameNumber && 'bg-green/25',
+            (isError || pulse === 'wrong') && 'bg-red text-white',
             pulse === 'wrong' && 'animate-pulse-wrong'
           )}
         >

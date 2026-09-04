@@ -9,6 +9,8 @@ export interface PromptOption {
   icon?: React.ReactNode
   onSelect: () => void
   className?: string
+  disabled?: boolean
+  disabledReason?: string
 }
 
 interface Props {
@@ -59,7 +61,6 @@ export default function PromptDialog({
         title={title}
         aria-describedby={promptId}
         className={cn('w-full max-w-sm', dialogClassName)}
-        headerClassName="pl-3"
       >
         <div className="flex flex-col gap-4 p-4">
           <p id={promptId} className="text-fg text-sm">
@@ -67,16 +68,21 @@ export default function PromptDialog({
           </p>
           <div className="flex flex-wrap justify-end gap-2">
             {options.map((option) => (
-              <Button
+              <span
                 key={option.name}
-                type="button"
-                title={option.title}
-                onClick={() => handleSelect(option)}
-                className={cn('gap-2 font-semibold', option.className)}
+                title={option.disabled ? option.disabledReason : undefined}
               >
-                {option.icon}
-                {option.name}
-              </Button>
+                <Button
+                  type="button"
+                  title={option.disabled ? undefined : option.title}
+                  disabled={option.disabled}
+                  onClick={() => handleSelect(option)}
+                  className={cn('gap-2 font-semibold', option.className)}
+                >
+                  {option.icon}
+                  {option.name}
+                </Button>
+              </span>
             ))}
           </div>
         </div>

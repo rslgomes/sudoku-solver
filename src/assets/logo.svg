@@ -1,8 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <circle cx="16" cy="16" r="15" fill="currentColor"/>
-  <!-- tic-tac-toe grid -->
-  <line x1="12" y1="7" x2="12" y2="25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="20" y1="7" x2="20" y2="25" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="7" y1="12" x2="25" y2="12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="7" y1="20" x2="25" y2="20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="var(--primary, oklch(74% 0.16 325))"/>
+
+  <g transform="rotate(-16 16 17)">
+    <rect x="8.5" y="10" width="15" height="15" rx="1.5" fill="var(--fg, oklch(16% 0.035 325))"/>
+    <rect x="7.5" y="9" width="15" height="15" rx="1.5" fill="var(--bg, oklch(92.03% 0.009 78.3))"/>
+    <line x1="12.5" y1="9" x2="12.5" y2="24" stroke="var(--secondary, oklch(74% 0.16 285))" stroke-width="0.9"/>
+    <line x1="17.5" y1="9" x2="17.5" y2="24" stroke="var(--secondary, oklch(74% 0.16 285))" stroke-width="0.9"/>
+    <line x1="7.5" y1="14" x2="22.5" y2="14" stroke="var(--secondary, oklch(74% 0.16 285))" stroke-width="0.9"/>
+    <line x1="7.5" y1="19" x2="22.5" y2="19" stroke="var(--secondary, oklch(74% 0.16 285))" stroke-width="0.9"/>
+  </g>
+
+  <g transform="rotate(44 16 16)">
+    <rect x="4" y="14.5" width="19" height="3" rx="1" fill="var(--fg, oklch(16% 0.035 325))"/>
+    <rect x="4" y="14.5" width="1" height="3" fill="var(--bg, oklch(92.03% 0.009 78.3))"/>
+    <rect x="21" y="14.5" width="4" height="3" fill="var(--bg, oklch(92.03% 0.009 78.3))"/>
+    <rect x="24.5" y="14.5" width="2.5" height="3" rx="0.6" fill="var(--fg, oklch(16% 0.035 325))"/>
+    <polygon points="4,14.5 4,17.5 0.5,16" fill="var(--secondary, oklch(74% 0.16 285))"/>
+  </g>
 </svg>

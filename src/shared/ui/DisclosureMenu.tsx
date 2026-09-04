@@ -220,8 +220,8 @@ export default function DisclosureMenu({
           'bg-bg-raised',
           'cursor-default select-none',
           'transition-[box-shadow,background-color] duration-75',
-          'group-open:shadow-press group-open:bg-bg-sunken',
-          'focus:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+          'group-open:shadow-press group-open:bg-titlebar-alt group-open:text-fg-on-titlebar-alt',
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-alt',
           'hover:bg-bg-sunken'
         )}
       >
@@ -235,7 +235,7 @@ export default function DisclosureMenu({
         onKeyDown={handlePanelKeyDown}
         className={cn(
           'absolute top-full left-0 z-50 min-w-max',
-          'bg-bg-raised shadow-raise',
+          'bg-bg-raised shadow-raise border-t-2 border-titlebar-alt',
           'flex flex-col py-1',
           panelClassName
         )}

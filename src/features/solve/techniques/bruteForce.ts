@@ -361,8 +361,6 @@ function seedStep(grid: Square[], board: Candidates): SceneStep | null {
 
     const stale = [...notes].filter((note) => !candidates.has(note))
     if (stale.length > 0) cell.removeNotes = stale
-    const missing = [...candidates].filter((note) => !notes.has(note))
-    if (missing.length > 0) cell.addNotes = missing
     if (candidates.size === 1) {
       const [value] = candidates
       cell.setValue = value

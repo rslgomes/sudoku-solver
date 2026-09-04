@@ -195,7 +195,7 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
         <Button type="button" onClick={handleClear} className="font-semibold">
           Clear
         </Button>
-        <Button type="submit" className="font-semibold">
+        <Button type="submit" className="font-semibold shadow-raise-accent">
           Load
         </Button>
         <p id={pasteHintId} className="text-xs text-fg-muted">

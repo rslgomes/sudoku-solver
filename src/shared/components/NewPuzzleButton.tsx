@@ -35,7 +35,7 @@ export default function NewPuzzleButton({
         className="h-8 p-1"
       >
         <span className="flex items-center justify-between gap-2">
-          <SparklesIcon aria-hidden className="size-6 text-blue" />
+          <SparklesIcon aria-hidden className="size-6 text-alt" />
           <span className="hidden lg:block">New</span>
         </span>
       </Button>
@@ -46,9 +46,14 @@ export default function NewPuzzleButton({
         onClose={close}
         title="Puzzle Input"
         className="w-full max-w-sm"
-        headerClassName="pl-3"
       >
-        <PuzzleInput className="mt-4 mb-4 px-2" onSubmit={onSubmit} />
+        <PuzzleInput
+          className="mt-4 mb-4 px-2"
+          onSubmit={(raw) => {
+            onSubmit(raw)
+            close()
+          }}
+        />
       </Dialog>
     </>
   )

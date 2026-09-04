@@ -7,7 +7,7 @@ import { useMoves } from './useMoves'
 import useTimer from './useTimer'
 import useMeta from './useMeta'
 import useSolveAlert from './useSolveAlert'
-import useAnnouncer from './useAnnouncer'
+import useAnnouncer from '@shared/hooks/useAnnouncer'
 
 export function useControllerOrchestrator({
   initialGrid,
