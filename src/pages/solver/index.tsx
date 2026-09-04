@@ -5,6 +5,7 @@ import WalkthroughControls from '@features/explain/WalkthroughControls'
 import { StageContext } from '@features/explain/contexts/stageContext'
 import useStage from '@features/explain/hooks/useStage'
 import { useSolveGrid } from '@features/solve/contexts/solveGridContext'
+import ImportFromPlayButton from '@features/solve/widgets/ImportFromPlayButton'
 import NewPuzzleButton from '@shared/components/NewPuzzleButton'
 import MainLayout from '@shared/layouts/MainLayout'
 
@@ -14,7 +15,15 @@ export default function SolvePage() {
 
   return (
     <StageContext.Provider value={stage}>
-      <MainLayout lockViewport actions={<NewPuzzleButton onSubmit={load} />}>
+      <MainLayout
+        lockViewport
+        actions={
+          <>
+            <ImportFromPlayButton />
+            <NewPuzzleButton onSubmit={load} />
+          </>
+        }
+      >
         <StageAnnouncer />
         <div className="flex h-full flex-col">
           <div className="mx-auto w-[min(100%,calc(100dvh-20rem))] max-w-lg pt-4">

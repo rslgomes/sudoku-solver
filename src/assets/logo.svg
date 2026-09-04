@@ -14,7 +14,7 @@
     <rect x="4" y="14.5" width="19" height="3" rx="1" fill="var(--fg, oklch(16% 0.035 325))"/>
     <rect x="4" y="14.5" width="1" height="3" fill="var(--bg, oklch(92.03% 0.009 78.3))"/>
     <rect x="21" y="14.5" width="4" height="3" fill="var(--bg, oklch(92.03% 0.009 78.3))"/>
-    <rect x="24.5" y="14.5" width="2.5" height="3" rx="0.6" fill="var(--secondary, oklch(74% 0.16 285))"/>
-    <polygon points="4,14.5 4,17.5 0.5,16" fill="var(--fg, oklch(16% 0.035 325))"/>
+    <rect x="24.5" y="14.5" width="2.5" height="3" rx="0.6" fill="var(--fg, oklch(16% 0.035 325))"/>
+    <polygon points="4,14.5 4,17.5 0.5,16" fill="var(--secondary, oklch(74% 0.16 285))"/>
   </g>
 </svg>
