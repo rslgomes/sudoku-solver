@@ -1,5 +1,7 @@
 export type SudokuNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
+export const GRID_SIZE = 9
+
 export const SUDOKU_NUMBERS: SudokuNumber[] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 export interface Square {

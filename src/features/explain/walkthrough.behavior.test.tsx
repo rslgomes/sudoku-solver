@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderRoute } from '../../test/renderRoute'
 
@@ -74,7 +74,9 @@ describe('walkthrough keyboard', () => {
 describe('walkthrough live region', () => {
   it('announces the scene on arrival and the step while paused', async () => {
     const user = await renderWalkthrough()
-    expect(liveRegion()).toBe('Clearing Notes. Scene 1 of 20, 2 steps')
+    await waitFor(() =>
+      expect(liveRegion()).toBe('Clearing Notes. Scene 1 of 20, 2 steps')
+    )
 
     await user.keyboard('{ArrowRight}')
     expect(liveRegion()).toMatch(/^Step 2 of 2/)

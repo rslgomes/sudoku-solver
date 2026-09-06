@@ -1,9 +1,9 @@
-import type { Square, SudokuNumber } from './types'
+import { GRID_SIZE, type Square, type SudokuNumber } from './types'
 
 export function parseGrid(raw: string): Square[] {
-  return Array.from({ length: 81 }, (_, i) => {
+  return Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, i) => {
     const n = parseInt(raw[i] ?? '0', 10)
-    const value = n >= 1 && n <= 9 ? (n as SudokuNumber) : null
+    const value = n >= 1 && n <= GRID_SIZE ? (n as SudokuNumber) : null
     return {
       value,
       notes: new Set<SudokuNumber>(),
@@ -25,5 +25,5 @@ export function serializeGrid(
 }
 
 export function squareName(idx: number) {
-  return `R${Math.floor(idx / 9) + 1}C${(idx % 9) + 1}`
+  return `R${Math.floor(idx / GRID_SIZE) + 1}C${(idx % GRID_SIZE) + 1}`
 }

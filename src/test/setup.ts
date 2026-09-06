@@ -1,8 +1,29 @@
 import '@testing-library/jest-dom/vitest'
-import { beforeEach, expect } from 'vitest'
+import { beforeEach, expect, vi } from 'vitest'
 import { toHaveNoViolations } from 'jest-axe'
 
 expect.extend(toHaveNoViolations)
+
+if (typeof globalThis.Worker === 'undefined') {
+  class WorkerStub {
+    postMessage() {}
+    terminate() {}
+    addEventListener() {}
+    removeEventListener() {}
+  }
+  // @ts-expect-error jsdom has no real Worker; solving is mocked below
+  globalThis.Worker = WorkerStub
+}
+
+vi.mock('comlink', async () => {
+  const { solve } = await import('@features/solve/solve')
+  return {
+    wrap: () => ({
+      solve: (board: Parameters<typeof solve>[0]) =>
+        Promise.resolve(solve(board)),
+    }),
+  }
+})
 
 beforeEach(() => {
   localStorage.clear()

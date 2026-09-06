@@ -1,5 +1,7 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { cn } from '@shared/libs/cn'
+import { useSolveGrid } from '@features/solve/contexts/solveGridContext'
+import useReducedMotion from '@shared/hooks/useReducedMotion'
 
 const base = cn(
   'inline-flex items-center px-3 py-1 text-sm font-main',
@@ -17,6 +19,11 @@ const tabProps = {
 } as const
 
 export default function ModeTabs() {
+  const { resultReady } = useSolveGrid()
+  const pathname = useLocation({ select: (l) => l.pathname })
+  const reducedMotion = useReducedMotion()
+  const awaitingSolve = resultReady && pathname !== '/solver'
+
   return (
     <nav
       aria-label="Mode"
@@ -25,8 +32,19 @@ export default function ModeTabs() {
       <Link to="/" {...tabProps}>
         Play
       </Link>
-      <Link to="/solver" search={{ initial: '' }} {...tabProps}>
-        Solve
+      <Link
+        to="/solver"
+        search={{ initial: '' }}
+        {...tabProps}
+        className={cn(
+          base,
+          awaitingSolve &&
+            (reducedMotion
+              ? 'bg-accent text-fg-on-accent'
+              : 'animate-blink-alert')
+        )}
+      >
+        Solve{awaitingSolve && <span className="sr-only"> — solution ready</span>}
       </Link>
     </nav>
   )

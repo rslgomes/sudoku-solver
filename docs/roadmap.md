@@ -36,7 +36,7 @@ _After portfolio is done — other projects come first, I'll return to finish th
 - [x] Naked single · hidden single · locked candidates (pointing + claiming)
 - [x] Walkthrough controls — autoplay with play / pause / speed, seek slider, scene list, reduced-motion and announcer support
 - [x] Cross-route puzzle transport — Import button on Solve, next to New, loads the initial puzzle from Play (`ImportFromPlayButton`)
-- [ ] Solve off the main thread — the pathological anti-brute-force puzzle freezes the UI for minutes
+- [x] Solve off the main thread — `solve()` now runs in a dedicated worker (Comlink), with a `solving` flag surfaced to the UI while it churns
 
 ---
 
