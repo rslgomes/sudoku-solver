@@ -6,6 +6,7 @@ import {
   PEERS,
   UNITS,
   SUDOKU_NUMBERS,
+  GRID_SIZE,
   getErrors,
   type Square,
   type SudokuNumber,
@@ -254,14 +255,17 @@ function restoredNotes(pulses: Pulse[]): Record<number, SudokuNumber[]> {
   )
 }
 
-const squareName = (idx: number) => `R${Math.floor(idx / 9) + 1}C${(idx % 9) + 1}`
+const squareName = (idx: number) =>
+  `R${Math.floor(idx / GRID_SIZE) + 1}C${(idx % GRID_SIZE) + 1}`
 
 function unitName(unit: number[]): string {
   const [first] = unit
-  const row = Math.floor(first / 9)
-  const col = first % 9
-  if (unit.every((cell) => Math.floor(cell / 9) === row)) return `row ${row + 1}`
-  if (unit.every((cell) => cell % 9 === col)) return `column ${col + 1}`
+  const row = Math.floor(first / GRID_SIZE)
+  const col = first % GRID_SIZE
+  if (unit.every((cell) => Math.floor(cell / GRID_SIZE) === row))
+    return `row ${row + 1}`
+  if (unit.every((cell) => cell % GRID_SIZE === col))
+    return `column ${col + 1}`
   return `box ${Math.floor(row / 3) * 3 + Math.floor(col / 3) + 1}`
 }
 

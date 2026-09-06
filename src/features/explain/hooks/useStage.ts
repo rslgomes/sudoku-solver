@@ -5,6 +5,7 @@ import type { Scene, SceneStep, StepEvidence } from '../types'
 import { applySteps } from '@features/solve/solve'
 import useReducedMotion from '@shared/hooks/useReducedMotion'
 import useAnnouncer from '@shared/hooks/useAnnouncer'
+import { runBeat } from '../lib/atoms'
 
 const EMPTY_SCENE: Scene = { title: '', explanation: '', steps: [] }
 const EMPTY_STEP: SceneStep = { beats: [] }
@@ -109,7 +110,7 @@ export default function useStage() {
       setSettled(true)
       return
     }
-    const anims = currentStep.beats.flatMap((beat) => beat(cells.current))
+    const anims = currentStep.beats.flatMap((beat) => runBeat(beat, cells.current))
     if (anims.length === 0) {
       setSettled(true)
       return

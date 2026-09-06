@@ -22,40 +22,63 @@ type Subset = {
   values: Set<SudokuNumber>
 }
 
-/**
- * 9×9 bitmap of a single unit.
- *
- * Row (0–8): square index within the unit
- * Column (0–8): candidate value (1–9)
- *
- * Bit index = squareIndex * 9 + candidateIndex
- *
- * Reading a row gives the digits a square can take.
- * Reading a column gives the squares a digit can go in.
- **/
-function buildMatrix(grid: Square[], unit: Unit): bigint {
-  let bitmap = 0n
-  for (let sqIndex = 0; sqIndex < unit.squares.length; sqIndex++) {
-    const gridIndex = unit.squares[sqIndex]
-    const { value, notes } = grid[gridIndex]
-
-    if (value) bitmap |= 1n << BigInt(value - 1 + 9 * sqIndex)
-    else for (const c of notes) bitmap |= 1n << BigInt(c - 1 + 9 * sqIndex)
-  }
-  return bitmap
+type UnitMatrix = {
+  unit: Unit
+  matrix: bigint
+  squares: number[]
+  candidates: SudokuNumber[]
+  size: number
 }
 
-function getSquareCandidates(matrix: bigint, sqIndex: number): number {
+function buildMatrix(grid: Square[], unit: Unit): UnitMatrix {
+  const unsolvedSquares = unit.squares.filter((idx) => !grid[idx].value)
+  const size = unsolvedSquares.length
+  if (size === 0)
+    return { unit, matrix: 0n, squares: [], candidates: [], size: 0 }
+
+  const candidatesSet = new Set<SudokuNumber>()
+  for (const square of unsolvedSquares)
+    for (const note of grid[square].notes) candidatesSet.add(note)
+
+  const candidates = [...candidatesSet].sort((a, b) => a - b)
+
+  const candidateCols = new Map(candidates.map((c, i) => [c, i]))
+
+  let matrix = 0n
+  for (let row = 0; row < size; row++) {
+    const { notes } = grid[unsolvedSquares[row]]
+    for (const note of notes) {
+      const col = candidateCols.get(note)
+      if (col === undefined) continue
+      matrix |= 1n << BigInt(row * size + col)
+    }
+  }
+
+  return { unit, matrix, squares: unsolvedSquares, candidates, size }
+}
+
+function getSquareCandidates(
+  matrix: bigint,
+  sqIndex: number,
+  size: number
+): number {
   let mask = 0
-  for (let candIndex = 0; candIndex < 9; candIndex++)
-    if (matrix & (1n << BigInt(sqIndex * 9 + candIndex))) mask |= 1 << candIndex
+  const offset = BigInt(sqIndex * size)
+  for (let col = 0; col < size; col++)
+    if (matrix & (1n << (offset + BigInt(col)))) mask |= 1 << col
   return mask
 }
 
-function getCandidateSquares(matrix: bigint, candIndex: number): number {
+function getCandidateSquares(
+  matrix: bigint,
+  candIndex: number,
+  size: number
+): number {
   let mask = 0
-  for (let sqIndex = 0; sqIndex < 9; sqIndex++)
-    if (matrix & (1n << BigInt(sqIndex * 9 + candIndex))) mask |= 1 << sqIndex
+  const candidateCol = BigInt(candIndex)
+  const stride = BigInt(size)
+  for (let row = 0; row < size; row++)
+    if (matrix & (1n << (BigInt(row) * stride + candidateCol))) mask |= 1 << row
 
   return mask
 }
@@ -68,17 +91,16 @@ function countOnes(bitmap: number): number {
 
 function maskToIndices(mask: number): number[] {
   const indices = []
-  for (let i = 0; i < 9; i++) if (mask & (1 << i)) indices.push(i)
+  for (let i = 0; mask >> i; i++) if (mask & (1 << i)) indices.push(i)
   return indices
 }
 
 function mergeMasks(
   indices: number[],
-  matrix: bigint,
-  fetcher: (m: bigint, idx: number) => number
+  fetcher: (idx: number) => number
 ): number {
   let union = 0
-  for (const idx of indices) union |= fetcher(matrix, idx)
+  for (const idx of indices) union |= fetcher(idx)
   return union
 }
 
@@ -113,28 +135,37 @@ function mergeMasks(
  * anything beyond the original k, there is a candidate to eliminate.
  **/
 function checkSubsetMatch(
-  matrix: bigint,
-  unit: Unit,
+  data: UnitMatrix,
   combination: number[],
-  size: SubsetSize,
+  subsetSize: SubsetSize,
   kind: Subset['kind']
 ): { squares: Set<number>; values: Set<SudokuNumber> } | null {
+  const { matrix, squares, candidates, size } = data
   const isNaked = kind === 'naked'
-  const matchFetcher = isNaked ? getSquareCandidates : getCandidateSquares
-  const toRemoveFetcher = isNaked ? getCandidateSquares : getSquareCandidates
 
-  const lockedMask = mergeMasks(combination, matrix, matchFetcher)
-  if (countOnes(lockedMask) !== size) return null
+  const matchFetcher = (idx: number) =>
+    isNaked
+      ? getSquareCandidates(matrix, idx, size)
+      : getCandidateSquares(matrix, idx, size)
+
+  const toRemoveFetcher = (idx: number) =>
+    isNaked
+      ? getCandidateSquares(matrix, idx, size)
+      : getSquareCandidates(matrix, idx, size)
+
+  const lockedMask = mergeMasks(combination, matchFetcher)
+  if (countOnes(lockedMask) !== subsetSize) return null
 
   const lockedIndices = maskToIndices(lockedMask)
-  const toRemoveMask = mergeMasks(lockedIndices, matrix, toRemoveFetcher)
-  if (countOnes(toRemoveMask) <= size) return null //no point finding a subset that doesn't remove anything from board
+  const toRemoveMask = mergeMasks(lockedIndices, toRemoveFetcher)
+  if (countOnes(toRemoveMask) <= subsetSize) return null
 
   const squareIndices = isNaked ? combination : lockedIndices
   const candidateIndices = isNaked ? lockedIndices : combination
+
   return {
-    squares: new Set(squareIndices.map((idx) => unit.squares[idx])),
-    values: new Set(candidateIndices.map((idx) => (idx + 1) as SudokuNumber)),
+    squares: new Set(squareIndices.map((idx) => squares[idx])),
+    values: new Set(candidateIndices.map((idx) => candidates[idx])),
   }
 }
 
@@ -154,37 +185,34 @@ function combinations(n: number, k: number): number[][] {
 }
 
 function findSubset(grid: Square[]): Subset | null {
-  const unitData = ALL_UNITS.map((unit) => ({
-    unit,
-    matrix: buildMatrix(grid, unit),
-  }))
+  const unitData = ALL_UNITS.map((unit) => buildMatrix(grid, unit)).filter(
+    (u) => u.size >= 4
+    // 3 or less candidates units are resolved by hidden single/naked single
+  )
 
   for (const size of SUBSET_SIZES) {
-    const combs = combinations(9, size)
     let firstHidden: Subset | null = null
 
-    for (const { unit, matrix } of unitData) {
-      for (const combination of combs) {
-        const nakedMatch = checkSubsetMatch(
-          matrix,
-          unit,
-          combination,
-          size,
-          'naked'
-        )
-        if (nakedMatch) return { kind: 'naked', size, unit, ...nakedMatch }
+    for (const data of unitData) {
+      const maxAllowedSize = Math.floor(data.size / 2)
+      if (size > maxAllowedSize) continue
+
+      const combs = combinations(data.size, size)
+
+      for (const comb of combs) {
+        const nakedMatch = checkSubsetMatch(data, comb, size, 'naked')
+        if (nakedMatch)
+          return { kind: 'naked', size, unit: data.unit, ...nakedMatch }
 
         if (firstHidden) continue
-        const hiddenMatch = checkSubsetMatch(
-          matrix,
-          unit,
-          combination,
-          size,
-          'hidden'
-        )
-        if (hiddenMatch) {
-          firstHidden = { kind: 'hidden', size, unit, ...hiddenMatch }
-        }
+        const hiddenMatch = checkSubsetMatch(data, comb, size, 'hidden')
+        if (hiddenMatch)
+          firstHidden = {
+            kind: 'hidden',
+            size,
+            unit: data.unit,
+            ...hiddenMatch,
+          }
       }
     }
     if (firstHidden) return firstHidden

@@ -10,7 +10,7 @@ import NewPuzzleButton from '@shared/components/NewPuzzleButton'
 import MainLayout from '@shared/layouts/MainLayout'
 
 export default function SolvePage() {
-  const { load } = useSolveGrid()
+  const { load, solving } = useSolveGrid()
   const stage = useStage()
 
   return (
@@ -26,8 +26,16 @@ export default function SolvePage() {
       >
         <StageAnnouncer />
         <div className="flex h-full flex-col">
-          <div className="mx-auto w-[min(100%,calc(100dvh-20rem))] max-w-lg pt-4">
+          <div className="relative mx-auto w-[min(100%,calc(100dvh-20rem))] max-w-lg pt-4">
             <GridStage />
+            {solving && (
+              <div
+                role="status"
+                className="bg-bg-base/80 text-fg-muted absolute inset-0 flex items-center justify-center text-sm"
+              >
+                Solving…
+              </div>
+            )}
           </div>
           <div className="bg-bg-base mt-3 flex min-h-0 flex-1 flex-col p-3 px-4">
             <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col gap-2">

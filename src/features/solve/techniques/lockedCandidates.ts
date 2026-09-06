@@ -3,6 +3,7 @@ import type { CellDelta, Scene } from '@features/explain/types'
 import {
   ALL_UNITS,
   getCandidates,
+  GRID_SIZE,
   SUDOKU_NUMBERS,
   type Square,
   type SudokuNumber,
@@ -56,7 +57,7 @@ type Orientation = {
 const ROW_ORIENTATION: Orientation = {
   label: 'row',
   baseStep: 27,
-  lineStep: 9,
+  lineStep: GRID_SIZE,
   boxStep: 3,
   innerStep: 1,
   lineLabel: (band, slot) => `row ${band * MATRIX_SIZE + lineOf(slot) + 1}`,
@@ -68,7 +69,7 @@ const COLUMN_ORIENTATION: Orientation = {
   baseStep: 3,
   lineStep: 1,
   boxStep: 27,
-  innerStep: 9,
+  innerStep: GRID_SIZE,
   lineLabel: (stack, slot) => `column ${stack * MATRIX_SIZE + lineOf(slot) + 1}`,
   boxLabel: (stack, slot) => `box ${boxOf(slot) * MATRIX_SIZE + stack + 1}`,
 }

@@ -8,7 +8,9 @@ import {
   nakedSingle,
   lockedCandidates,
   subsets,
+  fishes,
 } from './techniques'
+import wings from './techniques/wings'
 
 const TECHNIQUES = [
   checkEmptySquares,
@@ -17,6 +19,8 @@ const TECHNIQUES = [
   hiddenSingle,
   lockedCandidates,
   subsets,
+  fishes,
+  wings,
   bruteForce,
 ]
 

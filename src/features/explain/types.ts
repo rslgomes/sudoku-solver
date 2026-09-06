@@ -24,7 +24,22 @@ export type SceneStep = {
   delta?: Record<number, CellDelta>
 }
 
-export type Beat = (cells: Map<number, HTMLElement>) => Animation[]
+export type Beat =
+  | { kind: 'highlightValues'; indices: number[]; color?: string; delay?: number }
+  | {
+      kind: 'highlightNotes'
+      targets: Record<number, SudokuNumber[]>
+      color?: string
+      delay?: number
+    }
+  | { kind: 'drawPolyline'; squares: number[]; color?: string; delay?: number }
+  | {
+      kind: 'drawFan'
+      origin: number
+      targets: number[]
+      color?: string
+      delay?: number
+    }
 
 export type StepEvidence = {
   placed: Set<number>
