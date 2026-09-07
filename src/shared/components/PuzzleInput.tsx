@@ -1,6 +1,7 @@
 import { useId, useRef } from 'react'
 import { cn } from '@shared/libs/cn'
 import Button from '@shared/ui/Button'
+import useHasKeyboard from '@shared/hooks/useHasKeyboard'
 
 type PuzzleInputProps = {
   className?: string
@@ -11,6 +12,7 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
   const gridRef = useRef<Map<number, HTMLInputElement>>(new Map())
   const instructionsId = useId()
   const pasteHintId = useId()
+  const hasKeyboard = useHasKeyboard()
 
   const handleInputKeyDown = (e: React.KeyboardEvent, index: number) => {
     const moves: Partial<Record<string, number>> = {
@@ -136,9 +138,11 @@ export default function PuzzleInput({ className, onSubmit }: PuzzleInputProps) {
             <b className="text-fg">0</b> and <b className="text-fg">Space</b> to
             skip
           </li>
-          <li>
-            use <b className="text-fg">arrow keys</b> to navigate
-          </li>
+          {hasKeyboard && (
+            <li>
+              use <b className="text-fg">arrow keys</b> to navigate
+            </li>
+          )}
         </ul>
       </div>
       <div

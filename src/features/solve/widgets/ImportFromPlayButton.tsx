@@ -35,10 +35,14 @@ export default function ImportFromPlayButton() {
           onClick={open}
           aria-haspopup="dialog"
           aria-label="Import puzzle from Play"
-          className="h-8 p-1"
+          className="h-7 sm:h-8 p-1 shrink-0"
         >
           <span className="flex items-center justify-between gap-2">
-            <img src={importIcon} alt="Import" className="size-6" />
+            <img
+              src={importIcon}
+              alt="Import"
+              className="size-5 sm:size-6 shrink-0"
+            />
             <span className="hidden lg:block">Import</span>
           </span>
         </Button>

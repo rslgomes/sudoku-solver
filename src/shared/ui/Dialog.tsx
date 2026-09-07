@@ -73,7 +73,9 @@ export default function Dialog({
           </Button>
         </div>
       </header>
-      {children}
+      <div className="max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain">
+        {children}
+      </div>
     </dialog>
   )
 }
