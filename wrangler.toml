@@ -1,6 +1,8 @@
 name = "sudoku-solver"
 compatibility_date = "2026-09-06"
+main = "worker/index.ts"
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
