@@ -40,7 +40,7 @@ export default function ShareButton() {
           className="h-8 p-1"
         >
           <span className="flex items-center justify-between gap-2">
-            <img src={shareIcon} alt="Share" className="size-6" />
+            <img src={shareIcon} alt="Share" className="size-6 shrink-0" />
             <span className="hidden lg:block">Share</span>
           </span>
         </Button>
