@@ -3,7 +3,6 @@ import Timer from '@features/play/widgets/Timer'
 import SolveAlert from '@features/play/widgets/SolveAlert'
 import ShareButton from '@features/play/widgets/ShareButton'
 import NewPuzzleButton from '@shared/components/NewPuzzleButton'
-import DailyPuzzleButton from '@shared/components/DailyPuzzleButton'
 import MainLayout from '@shared/layouts/MainLayout'
 import { useController } from '@features/play/contexts/playControllerContext'
 import { parseGrid } from '@shared/sudoku/codec'
@@ -22,7 +21,6 @@ export default function HomePage() {
         actions={
           <>
             <ShareButton />
-            <DailyPuzzleButton onSubmit={(raw) => fillGrid(parseGrid(raw))} />
             <NewPuzzleButton onSubmit={(raw) => fillGrid(parseGrid(raw))} />
           </>
         }
